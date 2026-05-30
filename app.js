@@ -1,3 +1,12 @@
+/* SUPABASE CONFIGURATION (Enter your project details to enable database saving) */
+const SUPABASE_URL = window.SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
+
+let supabase = null;
+if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
 /* APPLICATION STATE */
 let calMonth = 4; // May (0-indexed: 4)
 let calYear = 2026;
@@ -739,23 +748,76 @@ function clearGstSearch() {
 
 
 /* CONTACT FORM SUBMISSION */
-function handleContactSubmit(event) {
+async function handleContactSubmit(event) {
   event.preventDefault();
 
   const name = document.getElementById('contact-name').value;
+  const email = document.getElementById('contact-email').value;
+  const phone = document.getElementById('contact-phone').value;
   const service = document.getElementById('contact-service').value;
+  const message = document.getElementById('contact-msg').value;
 
-  // Perform virtual validation & show nice customized success toast
-  showToast({
-    title: 'Consultation Booked!',
-    message: `Thank you, ${name}. An expert will contact you regarding "${service}" within one business day.`,
-    type: 'success'
-  });
+  // If Supabase is initialized, try inserting into the 'consultations' table
+  if (supabase) {
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    let oldBtnHtml = '';
+    if (submitBtn) {
+      oldBtnHtml = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Saving...</span>';
+    }
 
-  // Reset form inputs
-  const form = document.getElementById('consultation-form');
-  if (form) {
-    form.reset();
+    try {
+      const { data, error } = await supabase
+        .from('consultations')
+        .insert([
+          {
+            name: name,
+            email: email,
+            phone: phone,
+            service: service,
+            message: message,
+            created_at: new Date()
+          }
+        ]);
+
+      if (error) throw error;
+
+      showToast({
+        title: 'Consultation Saved!',
+        message: `Thank you, ${name}. Details stored in database. An expert will reach out soon.`,
+        type: 'success'
+      });
+
+      const form = document.getElementById('consultation-form');
+      if (form) form.reset();
+
+    } catch (err) {
+      console.error('Supabase error:', err);
+      showToast({
+        title: 'Database Error',
+        message: 'Could not write to Supabase: ' + err.message,
+        type: 'error'
+      });
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = oldBtnHtml;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+  } else {
+    // Fallback: Virtual validation & show nice customized success toast
+    showToast({
+      title: 'Consultation Booked (Demo)!',
+      message: `Thank you, ${name}. (Supabase not configured yet - demo mode active).`,
+      type: 'success'
+    });
+
+    const form = document.getElementById('consultation-form');
+    if (form) {
+      form.reset();
+    }
   }
 }
 
