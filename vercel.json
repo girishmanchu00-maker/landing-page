@@ -1,6 +1,0 @@
-{
-  "cleanUrls": true,
-  "routes": [
-    { "handle": "filesystem" }
-  ]
-}
