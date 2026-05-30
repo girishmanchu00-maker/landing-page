@@ -4,7 +4,8 @@
   "description": "FinEzy CA Professional Resource Portal",
   "main": "index.html",
   "scripts": {
-    "dev": "npx -y http-server -p 3000"
+    "dev": "npx -y http-server -p 3000",
+    "build": "echo 'Static build success'"
   },
   "keywords": [],
   "author": "",
