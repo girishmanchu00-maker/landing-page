@@ -1,0 +1,22 @@
+# FinEzy AI Coding Standards (.cursorrules)
+
+You are an AI assistant working on the FinEzy codebase. Adhere strictly to these rules:
+
+## Technology Stack
+- Next.js 14 (App Router)
+- Vanilla CSS styling (No Tailwind, No Bootstrap)
+- Supabase Client SDK (`@supabase/supabase-js`)
+- Lucide React for Icons
+
+## Styling & Design Guidelines
+- Never hardcode HEX or RGB values. Always use HSL variables from globals.css (e.g., `var(--primary)`, `var(--bg-surface)`).
+- Fonts: Apply `--font-heading` (Outfit) for headings, `--font-body` (Inter) for standard elements.
+- Corners: Use `--radius-sm` (6px), `--radius-md` (10px), `--radius-lg` (16px), `--radius-xl` (24px).
+- Transitions: Apply `--transition-fast` (0.15s), `--transition-normal` (0.25s), or `--transition-slow` (0.4s) on interactive hover/focus states.
+- Glassmorphism: Use `var(--glass-bg)`, `var(--glass-border)`, and `backdrop-filter: blur(var(--glass-blur))`.
+
+## Coding Best Practices
+- Place `"use client"` at the top of client-side interactive component files.
+- Handle database transactions securely using client-side environment configs (`process.env.NEXT_PUBLIC_SUPABASE_URL`, `process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+- Maintain a proper heading structure (single `<h1>` per view, cascading semantic headings).
+- Use semantic HTML tags (`<main>`, `<nav>`, `<section>`, `<header>`) and unique testable IDs for forms.

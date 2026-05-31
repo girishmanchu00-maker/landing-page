@@ -6,7 +6,8 @@ import {
   GraduationCap, CalendarClock, Wallet, Hourglass, ListChecks, SearchCode, 
   TrendingUp, ChevronRight, Menu, X, ChevronLeft, Percent, Home, ArrowUpRight, 
   Scissors, Info, MapPin, Phone, Mail, Clock, MessageSquare, Send, CheckCircle2, 
-  AlertTriangle, Check
+  AlertTriangle, Check, LogIn, LogOut, LayoutDashboard, User, Lock, RefreshCw, 
+  Briefcase
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
@@ -133,6 +134,15 @@ export default function Page() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState('light');
 
+  // Authentication & Dashboard States
+  const [user, setUser] = useState(null);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+  const [authLoading, setAuthLoading] = useState(false);
+  const [consultations, setConsultations] = useState([]);
+  const [loadingConsultations, setLoadingConsultations] = useState(false);
+
   // Calendar States
   const [calMonth, setCalMonth] = useState(4); // May
   const [calYear, setCalYear] = useState(2026);
@@ -181,7 +191,7 @@ export default function Page() {
   useEffect(() => {
     // Sync URL hash router on mount
     const hash = window.location.hash.replace('#', '');
-    const validPages = ['home', 'calendar', 'calculator', 'tracker', 'checklist', 'gst', 'budget', 'contact'];
+    const validPages = ['home', 'calendar', 'calculator', 'tracker', 'checklist', 'gst', 'budget', 'contact', 'login', 'dashboard'];
     if (hash && validPages.includes(hash)) {
       setActivePage(hash);
     }
@@ -210,6 +220,30 @@ export default function Page() {
     });
     setChecklistState(loadedProgress);
 
+    // Auth Session Sync
+    if (supabase) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchConsultationsData();
+        }
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchConsultationsData();
+        } else {
+          setConsultations([]);
+        }
+      });
+
+      return () => {
+        window.removeEventListener('hashchange', handleHashChange);
+        subscription.unsubscribe();
+      };
+    }
+
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
@@ -217,6 +251,80 @@ export default function Page() {
 
 
   /* HANDLERS */
+  const fetchConsultationsData = async () => {
+    if (!supabase) return;
+    setLoadingConsultations(true);
+    try {
+      const { data, error } = await supabase
+        .from('consultations')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setConsultations(data || []);
+    } catch (err) {
+      console.error('Error fetching consultations:', err);
+    } finally {
+      setLoadingConsultations(false);
+    }
+  };
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    if (!supabase) {
+      showToast('Configuration Required', 'Supabase URL and Anon Key are missing.', 'error');
+      return;
+    }
+    if (!authEmail || !authPassword) {
+      showToast('Validation Error', 'Email and Password are required.', 'error');
+      return;
+    }
+    
+    setAuthLoading(true);
+    try {
+      if (authMode === 'login') {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+        showToast('Welcome Back!', `Logged in successfully as ${data.user.email}`, 'success');
+        handlePageChange('dashboard');
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+        if (data.session) {
+          showToast('Account Created!', `Logged in successfully as ${data.user.email}`, 'success');
+          handlePageChange('dashboard');
+        } else {
+          showToast('Verification Sent!', 'Please check your email inbox to confirm registration.', 'info');
+        }
+      }
+      setAuthPassword('');
+    } catch (err) {
+      console.error('Authentication error:', err);
+      showToast('Authentication Failed', err.message, 'error');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    if (!supabase) return;
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      showToast('Logged Out', 'You have been signed out successfully.', 'info');
+      handlePageChange('home');
+    } catch (err) {
+      console.error('Sign out error:', err);
+      showToast('Error', 'Failed to sign out: ' + err.message, 'error');
+    }
+  };
+
   const handlePageChange = (pageId) => {
     setActivePage(pageId);
     window.location.hash = pageId;
@@ -455,6 +563,12 @@ export default function Page() {
             <button className={`nav-btn ${activePage === 'gst' ? 'active' : ''}`} onClick={() => handlePageChange('gst')}>GST Finder</button>
             <button className={`nav-btn ${activePage === 'budget' ? 'active' : ''}`} onClick={() => handlePageChange('budget')}>Budget 2025</button>
             <button className={`nav-btn ${activePage === 'contact' ? 'active' : ''}`} onClick={() => handlePageChange('contact')}>Contact</button>
+            {user && (
+              <button className={`nav-btn ${activePage === 'dashboard' ? 'active' : ''}`} onClick={() => handlePageChange('dashboard')}>
+                <LayoutDashboard size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                Dashboard
+              </button>
+            )}
           </div>
 
           <div className="nav-actions">
@@ -465,10 +579,23 @@ export default function Page() {
               </span>
             </button>
             
-            <button className="nav-cta" onClick={() => handlePageChange('contact')}>
-              <CalendarClock />
-              <span>Consultation</span>
-            </button>
+            {user ? (
+              <button className="nav-cta btn-signout" onClick={handleSignOut} style={{ backgroundColor: 'var(--danger)', boxShadow: '0 4px 10px rgba(239, 68, 68, 0.2)' }}>
+                <LogOut size={16} />
+                <span>Sign Out</span>
+              </button>
+            ) : (
+              <>
+                <button className="nav-btn login-nav-btn" onClick={() => handlePageChange('login')}>
+                  <LogIn size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                  Member Login
+                </button>
+                <button className="nav-cta" onClick={() => handlePageChange('contact')}>
+                  <CalendarClock />
+                  <span>Consultation</span>
+                </button>
+              </>
+            )}
 
             {/* Mobile Menu Toggle */}
             <button className="mobile-toggle" onClick={handleToggleMobileMenu}>
@@ -489,7 +616,17 @@ export default function Page() {
           <button className={`mobile-nav-btn ${activePage === 'gst' ? 'active' : ''}`} onClick={() => { handlePageChange('gst'); handleToggleMobileMenu(); }}>GST Rate Finder</button>
           <button className={`mobile-nav-btn ${activePage === 'budget' ? 'active' : ''}`} onClick={() => { handlePageChange('budget'); handleToggleMobileMenu(); }}>Union Budget 2025</button>
           <button className={`mobile-nav-btn ${activePage === 'contact' ? 'active' : ''}`} onClick={() => { handlePageChange('contact'); handleToggleMobileMenu(); }}>Contact Us</button>
-          <button className="mobile-nav-cta" onClick={() => { handlePageChange('contact'); handleToggleMobileMenu(); }}>Book Consultation</button>
+          {user ? (
+            <>
+              <button className={`mobile-nav-btn ${activePage === 'dashboard' ? 'active' : ''}`} onClick={() => { handlePageChange('dashboard'); handleToggleMobileMenu(); }}>Team Dashboard</button>
+              <button className="mobile-nav-cta" onClick={() => { handleSignOut(); handleToggleMobileMenu(); }} style={{ backgroundColor: 'var(--danger)' }}>Sign Out</button>
+            </>
+          ) : (
+            <>
+              <button className={`mobile-nav-btn ${activePage === 'login' ? 'active' : ''}`} onClick={() => { handlePageChange('login'); handleToggleMobileMenu(); }}>Member Login</button>
+              <button className="mobile-nav-cta" onClick={() => { handlePageChange('contact'); handleToggleMobileMenu(); }}>Book Consultation</button>
+            </>
+          )}
         </div>
       </div>
 
@@ -1373,6 +1510,294 @@ export default function Page() {
               </form>
             </div>
           </div>
+        </section>
+
+        {/* PAGE 9: MEMBER LOGIN / SIGN UP */}
+        <section className={`page ${activePage === 'login' ? 'active' : ''}`}>
+          <div className="auth-container">
+            <div className="auth-card">
+              <div className="auth-logo">
+                <span className="logo-icon"><ShieldCheck /></span>
+                <h2>Fin<span>Ezy</span> Team</h2>
+              </div>
+              <p className="auth-subtitle">Access your professional client inquiries, lead analytics, and scheduling logs.</p>
+              
+              <div className="auth-toggle">
+                <button 
+                  type="button"
+                  className={`auth-toggle-btn ${authMode === 'login' ? 'active' : ''}`} 
+                  onClick={() => setAuthMode('login')}
+                >
+                  Sign In
+                </button>
+                <button 
+                  type="button"
+                  className={`auth-toggle-btn ${authMode === 'signup' ? 'active' : ''}`} 
+                  onClick={() => setAuthMode('signup')}
+                >
+                  Register Team
+                </button>
+              </div>
+
+              <form onSubmit={handleAuth} className="auth-form">
+                <div className="form-group">
+                  <label htmlFor="auth-email">Team Email</label>
+                  <div className="auth-input-wrapper">
+                    <span className="auth-input-icon"><User size={16} /></span>
+                    <input 
+                      type="email" 
+                      id="auth-email" 
+                      placeholder="name@finezy.in" 
+                      value={authEmail} 
+                      onChange={(e) => setAuthEmail(e.target.value)} 
+                      required 
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="auth-password">Password</label>
+                  <div className="auth-input-wrapper">
+                    <span className="auth-input-icon"><Lock size={16} /></span>
+                    <input 
+                      type="password" 
+                      id="auth-password" 
+                      placeholder="••••••••" 
+                      value={authPassword} 
+                      onChange={(e) => setAuthPassword(e.target.value)} 
+                      required 
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" className="auth-submit-btn" disabled={authLoading}>
+                  {authLoading ? (
+                    <span className="flex-center-y justify-center gap-2">
+                      <RefreshCw className="animate-spin" size={16} style={{ display: 'inline-block', marginRight: '6px' }} />
+                      <span>{authMode === 'login' ? 'Signing in...' : 'Registering...'}</span>
+                    </span>
+                  ) : (
+                    <span>{authMode === 'login' ? 'Sign In to Dashboard' : 'Create Team Account'}</span>
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        {/* PAGE 10: TEAM DASHBOARD & ANALYTICS */}
+        <section className={`page ${activePage === 'dashboard' ? 'active' : ''}`}>
+          {!user ? (
+            <div className="unauthorized-card text-center" style={{ padding: '80px 24px' }}>
+              <AlertTriangle size={48} className="text-danger" style={{ marginBottom: '16px', display: 'inline-block' }} />
+              <h2>Access Restricted</h2>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>Please sign in to view the team dashboard and consultation logs.</p>
+              <button className="btn-primary" onClick={() => handlePageChange('login')} style={{ display: 'inline-flex' }}>
+                Go to Sign In
+              </button>
+            </div>
+          ) : (
+            <div className="dashboard-wrapper">
+              <div className="dashboard-header-panel">
+                <div className="db-header-title">
+                  <span className="db-badge">Active Session</span>
+                  <h1>Team Portal &amp; Analytics</h1>
+                  <p>Welcome back, <strong>{user.email}</strong>. Here is your dashboard overview.</p>
+                </div>
+                <div className="db-actions">
+                  <button className="btn-secondary" onClick={fetchConsultationsData} disabled={loadingConsultations} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    <RefreshCw size={14} className={loadingConsultations ? 'animate-spin' : ''} style={{ marginRight: '6px' }} />
+                    Sync Data
+                  </button>
+                  <button className="btn-secondary" onClick={handleSignOut} style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--danger)', borderColor: 'var(--danger-light)' }}>
+                    <LogOut size={14} style={{ marginRight: '6px' }} />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+
+              {/* Analytics widgets */}
+              <div className="dashboard-stats-grid">
+                <div className="db-stat-card">
+                  <div className="db-stat-icon-wrapper blue">
+                    <MessageSquare size={20} />
+                  </div>
+                  <div className="db-stat-info">
+                    <span className="db-stat-number">{consultations.length}</span>
+                    <span className="db-stat-label">Total Inquiries</span>
+                  </div>
+                </div>
+
+                <div className="db-stat-card">
+                  <div className="db-stat-icon-wrapper green">
+                    <CheckCircle2 size={20} />
+                  </div>
+                  <div className="db-stat-info">
+                    <span className="db-stat-number">
+                      {consultations.filter(c => c.created_at && new Date(c.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
+                    </span>
+                    <span className="db-stat-label">New This Week</span>
+                  </div>
+                </div>
+
+                <div className="db-stat-card">
+                  <div className="db-stat-icon-wrapper orange">
+                    <Briefcase size={20} />
+                  </div>
+                  <div className="db-stat-info">
+                    {/* Most requested service */}
+                    <span className="db-stat-number" style={{ fontSize: '1.15rem', padding: '4px 0' }}>
+                      {(() => {
+                        if (consultations.length === 0) return 'None';
+                        const serviceCounts = {};
+                        consultations.forEach(c => {
+                          if (c.service) {
+                            serviceCounts[c.service] = (serviceCounts[c.service] || 0) + 1;
+                          }
+                        });
+                        let maxService = 'None';
+                        let maxCount = 0;
+                        Object.entries(serviceCounts).forEach(([svc, count]) => {
+                          if (count > maxCount) {
+                            maxCount = count;
+                            maxService = svc;
+                          }
+                        });
+                        return maxService.length > 18 ? maxService.substring(0, 16) + '...' : maxService;
+                      })()}
+                    </span>
+                    <span className="db-stat-label">Top Service Category</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Distribution Charts */}
+              <div className="dashboard-two-column">
+                <div className="dashboard-card chart-card">
+                  <h3>Service Request Distribution</h3>
+                  <p className="card-subtitle">Inquiry count and percentage breakdown by selected category.</p>
+                  
+                  <div className="chart-bars-list" style={{ marginTop: '20px' }}>
+                    {(() => {
+                      if (consultations.length === 0) {
+                        return <p style={{ color: 'var(--text-tertiary)', textAlign: 'center', padding: '24px 0' }}>No submissions data available.</p>;
+                      }
+                      
+                      const serviceCounts = {};
+                      consultations.forEach(c => {
+                        if (c.service) {
+                          serviceCounts[c.service] = (serviceCounts[c.service] || 0) + 1;
+                        }
+                      });
+
+                      return Object.entries(serviceCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([svc, count]) => {
+                          const pct = ((count / consultations.length) * 100).toFixed(0);
+                          return (
+                            <div className="chart-bar-item" key={svc}>
+                              <div className="chart-bar-info">
+                                <span className="chart-bar-name">{svc}</span>
+                                <span className="chart-bar-count"><strong>{count}</strong> ({pct}%)</span>
+                              </div>
+                              <div className="chart-bar-track">
+                                <div className="chart-bar-fill" style={{ width: `${pct}%` }}></div>
+                              </div>
+                            </div>
+                          );
+                        });
+                    })()}
+                  </div>
+                </div>
+
+                <div className="dashboard-card info-summary-card">
+                  <h3>Team Operations Guide</h3>
+                  <div className="ops-list" style={{ marginTop: '16px' }}>
+                    <div className="ops-item">
+                      <div className="ops-bullet">1</div>
+                      <div className="ops-content">
+                        <strong>Review New Inquiries</strong>
+                        <p>Acknowledge client consultation submissions within 24 hours of standard submission timestamps.</p>
+                      </div>
+                    </div>
+                    <div className="ops-item">
+                      <div className="ops-bullet">2</div>
+                      <div className="ops-content">
+                        <strong>Verify Details</strong>
+                        <p>Before calling, cross-examine the client's preferred filing category (e.g., GST vs Income Tax).</p>
+                      </div>
+                    </div>
+                    <div className="ops-item">
+                      <div className="ops-bullet">3</div>
+                      <div className="ops-content">
+                        <strong>Update Consultation Status</strong>
+                        <p>Keep records organized. Direct questions to the primary compliance auditor.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Consultation Logs CRM Table */}
+              <div className="dashboard-card table-card" style={{ marginTop: '24px' }}>
+                <div className="table-card-header">
+                  <h3>Recent Consultation Logs</h3>
+                  <span className="total-rows-badge">{consultations.length} records</span>
+                </div>
+                
+                {loadingConsultations ? (
+                  <div className="table-loading text-center" style={{ padding: '48px 0' }}>
+                    <RefreshCw size={24} className="animate-spin text-primary" style={{ margin: '0 auto 12px auto' }} />
+                    <p style={{ color: 'var(--text-secondary)' }}>Loading submissions from Supabase...</p>
+                  </div>
+                ) : consultations.length === 0 ? (
+                  <div className="table-empty text-center" style={{ padding: '48px 0' }}>
+                    <MessageSquare size={36} style={{ color: 'var(--text-tertiary)', margin: '0 auto 12px auto', display: 'inline-block' }} />
+                    <p style={{ color: 'var(--text-secondary)' }}>No consultation requests registered in database yet.</p>
+                  </div>
+                ) : (
+                  <div className="table-responsive" style={{ marginTop: '16px' }}>
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Client Name</th>
+                          <th>Contact Info</th>
+                          <th>Required Service</th>
+                          <th>Requirement Description</th>
+                          <th>Submitted At</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {consultations.map((c) => {
+                          const dateStr = c.created_at 
+                            ? new Date(c.created_at).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })
+                            : 'N/A';
+                          return (
+                            <tr key={c.id}>
+                              <td><strong>{c.name}</strong></td>
+                              <td>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{c.email}</div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>{c.phone}</div>
+                              </td>
+                              <td><span className="category-tag tag-it">{c.service}</span></td>
+                              <td><span className="table-msg-clamp" title={c.message} style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: '0.85rem' }}>{c.message}</span></td>
+                              <td><span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{dateStr}</span></td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </section>
       </main>
 
