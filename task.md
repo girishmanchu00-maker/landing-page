@@ -1,8 +1,8 @@
-# Checklist for Google Sheets Integration
+# Checklist for Full Google Sheets CMS Integration
 
-- `[x]` Define `calendarItems` state and environment variable `NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL` in `app/page.js`
-- `[x]` Implement robust `parseCSV` helper function in `app/page.js`
-- `[x]` Implement `fetchGoogleSheetCalendar` in `app/page.js` to fetch and parse sheet data
-- `[x]` Add `fetchGoogleSheetCalendar` to `useEffect` mount in `app/page.js`
-- `[x]` Update rendering components to display the dynamic list in `app/page.js`
+- `[x]` Add state variables for `gstListItems`, `checklistItems`, and `trackerDateItems` in `app/page.js`
+- `[x]` Implement specialized CSV parsing functions (`parseGstCSV`, `parseChecklistCSV`, `parseTrackerCSV`) in `app/page.js`
+- `[x]` Implement dynamic fetch functions (`fetchGstSheet`, `fetchChecklistSheet`, `fetchTrackerSheet`) in `app/page.js`
+- `[x]` Trigger all 4 sheet fetchers in `useEffect` on mount in `app/page.js`
+- `[x]` Update JSX rendering blocks for GST list, checklists, and tracker in `app/page.js` to reference the dynamic state values
 - `[x]` Verify local execution and fallback functionality

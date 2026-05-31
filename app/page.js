@@ -148,6 +148,9 @@ export default function Page() {
   const [calYear, setCalYear] = useState(2026);
   const [activeFilter, setActiveFilter] = useState('all');
   const [calendarItems, setCalendarItems] = useState(calData);
+  const [gstListItems, setGstListItems] = useState(gstItems);
+  const [checklistItems, setChecklistItems] = useState(checklists);
+  const [trackerDateItems, setTrackerDateItems] = useState(trackerItems);
 
   // Calculators Selection
   const [calcTab, setCalcTab] = useState('it');
@@ -213,16 +216,11 @@ export default function Page() {
     setTheme(initialTheme);
     document.documentElement.setAttribute('data-theme', initialTheme);
 
-    // Load checklist progress from LocalStorage
-    const loadedProgress = {};
-    checklists.forEach((_, ci) => {
-      const listId = `checklist-${ci}`;
-      loadedProgress[ci] = JSON.parse(localStorage.getItem(listId)) || {};
-    });
-    setChecklistState(loadedProgress);
-
-    // Fetch Google Sheet Calendar if configured
+    // Fetch Google Sheet modules if configured
     fetchGoogleSheetCalendar();
+    fetchGstSheet();
+    fetchChecklistSheet();
+    fetchTrackerSheet();
 
     // Auth Session Sync
     if (supabase) {
@@ -253,8 +251,218 @@ export default function Page() {
     };
   }, []);
 
+  // Sync checklist checked status reactively from LocalStorage
+  useEffect(() => {
+    const loadedProgress = {};
+    checklistItems.forEach((_, ci) => {
+      const listId = `checklist-${ci}`;
+      loadedProgress[ci] = JSON.parse(localStorage.getItem(listId)) || {};
+    });
+    setChecklistState(loadedProgress);
+  }, [checklistItems]);
+
 
   /* HANDLERS */
+  const parseGstCSV = (text) => {
+    if (!text) return [];
+    const lines = text.split(/\r?\n/);
+    if (lines.length < 2) return [];
+
+    const headers = [];
+    const headerLine = lines[0];
+    const headerMatches = headerLine.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || headerLine.split(',');
+    headerMatches.forEach(h => {
+      headers.push(h.trim().replace(/^["']|["']$/g, ''));
+    });
+
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const row = [];
+      let insideQuote = false;
+      let entry = '';
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        if (char === '"') {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          row.push(entry.trim().replace(/^["']|["']$/g, ''));
+          entry = '';
+        } else {
+          entry += char;
+        }
+      }
+      row.push(entry.trim().replace(/^["']|["']$/g, ''));
+
+      const item = {};
+      headers.forEach((header, index) => {
+        item[header] = row[index] || '';
+      });
+
+      if (item.hsn && item.desc && item.rate) {
+        result.push({
+          hsn: String(item.hsn),
+          desc: item.desc,
+          rate: parseInt(item.rate, 10) || 0,
+          cat: item.cat || 'General'
+        });
+      }
+    }
+    return result;
+  };
+
+  const parseChecklistCSV = (text) => {
+    if (!text) return [];
+    const lines = text.split(/\r?\n/);
+    if (lines.length < 2) return [];
+
+    const headers = [];
+    const headerLine = lines[0];
+    const headerMatches = headerLine.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || headerLine.split(',');
+    headerMatches.forEach(h => {
+      headers.push(h.trim().replace(/^["']|["']$/g, ''));
+    });
+
+    const groups = {};
+    const orderedKeys = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const row = [];
+      let insideQuote = false;
+      let entry = '';
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        if (char === '"') {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          row.push(entry.trim().replace(/^["']|["']$/g, ''));
+          entry = '';
+        } else {
+          entry += char;
+        }
+      }
+      row.push(entry.trim().replace(/^["']|["']$/g, ''));
+
+      const item = {};
+      headers.forEach((header, index) => {
+        item[header] = row[index] || '';
+      });
+
+      if (item.title && item.item) {
+        if (!groups[item.title]) {
+          groups[item.title] = {
+            title: item.title,
+            icon: item.icon || '📄',
+            items: []
+          };
+          orderedKeys.push(item.title);
+        }
+        groups[item.title].items.push(item.item);
+      }
+    }
+
+    return orderedKeys.map(k => groups[k]);
+  };
+
+  const parseTrackerCSV = (text) => {
+    if (!text) return [];
+    const lines = text.split(/\r?\n/);
+    if (lines.length < 2) return [];
+
+    const headers = [];
+    const headerLine = lines[0];
+    const headerMatches = headerLine.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || headerLine.split(',');
+    headerMatches.forEach(h => {
+      headers.push(h.trim().replace(/^["']|["']$/g, ''));
+    });
+
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const row = [];
+      let insideQuote = false;
+      let entry = '';
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        if (char === '"') {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          row.push(entry.trim().replace(/^["']|["']$/g, ''));
+          entry = '';
+        } else {
+          entry += char;
+        }
+      }
+      row.push(entry.trim().replace(/^["']|["']$/g, ''));
+
+      const item = {};
+      headers.forEach((header, index) => {
+        item[header] = row[index] || '';
+      });
+
+      if (item.title && item.dueDate) {
+        const parsedDate = new Date(item.dueDate);
+        if (!isNaN(parsedDate.getTime())) {
+          result.push({
+            title: item.title,
+            form: item.form || 'General',
+            dueDate: parsedDate
+          });
+        }
+      }
+    }
+    return result;
+  };
+
+  const fetchGstSheet = async () => {
+    const url = process.env.NEXT_PUBLIC_GOOGLE_SHEET_GST_URL;
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      const text = await res.text();
+      const data = parseGstCSV(text);
+      if (data && data.length > 0) setGstListItems(data);
+    } catch (err) {
+      console.error('Error fetching GST sheet:', err);
+    }
+  };
+
+  const fetchChecklistSheet = async () => {
+    const url = process.env.NEXT_PUBLIC_GOOGLE_SHEET_CHECKLIST_URL;
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      const text = await res.text();
+      const data = parseChecklistCSV(text);
+      if (data && data.length > 0) setChecklistItems(data);
+    } catch (err) {
+      console.error('Error fetching Checklist sheet:', err);
+    }
+  };
+
+  const fetchTrackerSheet = async () => {
+    const url = process.env.NEXT_PUBLIC_GOOGLE_SHEET_TRACKER_URL;
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      const text = await res.text();
+      const data = parseTrackerCSV(text);
+      if (data && data.length > 0) setTrackerDateItems(data);
+    } catch (err) {
+      console.error('Error fetching Tracker sheet:', err);
+    }
+  };
+
   const parseCSV = (text) => {
     if (!text) return [];
     const lines = text.split(/\r?\n/);
@@ -610,12 +818,12 @@ export default function Page() {
 
   // GST rates filter
   const filteredGstList = gstInput
-    ? gstItems.filter(g => 
+    ? gstListItems.filter(g => 
         g.desc.toLowerCase().includes(gstInput.toLowerCase().trim()) || 
         g.hsn.includes(gstInput.trim()) || 
         g.cat.toLowerCase().includes(gstInput.toLowerCase().trim())
       )
-    : gstItems;
+    : gstListItems;
 
   const gstRateColors = { 0: 'r0', 5: 'r5', 12: 'r12', 18: 'r18', 28: 'r28' };
 
@@ -1275,7 +1483,7 @@ export default function Page() {
             </div>
 
             <div className="tracker-grid">
-              {trackerItems.map((item, idx) => {
+              {trackerDateItems.map((item, idx) => {
                 const diff = Math.ceil((item.dueDate - todayDate) / (1000 * 60 * 60 * 24));
                 let urgencyClass = 'safe';
                 let urgencyLabel = `${diff} days left`;
@@ -1322,7 +1530,7 @@ export default function Page() {
             </div>
 
             <div className="checklist-wrap">
-              {checklists.map((cl, ci) => {
+              {checklistItems.map((cl, ci) => {
                 const listState = checklistState[ci] || {};
                 const total = cl.items.length;
                 let doneCount = 0;

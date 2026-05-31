@@ -1,42 +1,52 @@
-# Implementation Plan: Google Sheets Integration for Compliance Calendar
+# Implementation Plan: Full Google Sheets CMS Integration
 
-This plan details how to connect a Google Sheet to your Next.js application, allowing you to edit deadlines and compliance events in a spreadsheet and have them update on the website in real-time.
+This plan details how to connect the remaining static modules of the FinEzy application (GST Rate Finder, Checklists, and Due Date Tracker) to separate tabs of your Google Sheet. If you edit any sheet tab, the corresponding website window will update in real-time.
 
 ---
 
-## How It Works
+## Google Sheet Structure
 
-We will use the **Google Sheets "Publish to Web as CSV"** method. This approach:
-- Is **100% free** and requires **no Google API keys** or service accounts.
-- Works in real-time (Google updates the published CSV feed within a few minutes of edits).
-- Includes a local code fallback so the website never breaks if the sheet is unavailable.
+You will configure **4 separate tabs** inside your single Google Sheet document:
+
+### Tab 1: Calendar (`Sheet1`)
+Used for the compliance deadlines.
+- **Headers**: `date`, `form`, `desc`, `cat`, `catLabel`
+- **Fallback**: Local `calData` array.
+
+### Tab 2: GST Finder (`Sheet2`)
+Used for the HSN lookup database.
+- **Headers**: `hsn`, `desc`, `rate`, `cat`
+- **Fallback**: Local `gstItems` array.
+
+### Tab 3: Checklists (`Sheet3`)
+Used for document requirements lists. Since checklists contain multiple items, group them by sharing the same `title` and `icon` on multiple rows.
+- **Headers**: `title`, `icon`, `item`
+- **Fallback**: Local `checklists` array.
+
+### Tab 4: Tracker (`Sheet4`)
+Used for the due dates countdown grid.
+- **Headers**: `title`, `form`, `dueDate` (Date format: `YYYY-MM-DD` or standard date string)
+- **Fallback**: Local `trackerItems` array.
 
 ---
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Step 1: Set Up Your Google Sheet**
-> 1. Create a new Google Sheet.
-> 2. Create the following headers in row 1 (columns A to E):
->    - **date** (e.g., `05`, `11`, `15`)
->    - **form** (e.g., `GSTR-3B`, `GSTR-1`, `PF/ESI Deposit`)
->    - **desc** (e.g., `GST monthly return for April supplies`)
->    - **cat** (must be one of: `gst`, `it`, `tds`, `mca`, `pf`)
->    - **catLabel** (e.g., `GST`, `Income Tax`, `TDS`, `MCA`, `PF/ESI`)
-> 3. Fill in your rows with compliance dates.
+> **Step 1: Publish Each Tab to Web as CSV**
+> In your Google Sheet, click **File** -> **Share** -> **Publish to web**.
+> 1. Select the specific tab name (e.g. `GST`) in the dropdown.
+> 2. Select **Comma-separated values (.csv)** in the next dropdown.
+> 3. Click **Publish** and copy the generated link.
+> 4. Repeat this step for each of the 4 tabs to get 4 unique CSV URLs.
 > 
-> **Step 2: Publish Your Sheet to the Web**
-> 1. In your Google Sheet, click **File** -> **Share** -> **Publish to web**.
-> 2. In the popup, change "Entire Document" to your specific sheet tab (e.g., `Sheet1`).
-> 3. Change "Web page" to **Comma-separated values (.csv)**.
-> 4. Click **Publish** and copy the generated link. It will look like this:
->    `https://docs.google.com/spreadsheets/d/e/2PACX-XXXXX/pub?gid=0&single=true&output=csv`
-> 
-> **Step 3: Update Environment Variables**
-> Add your published CSV link to your [.env.local](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/.env.local) file:
+> **Step 2: Update Your Environment Variables**
+> Open your [.env.local](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/.env.local) file and append the variables:
 > ```env
-> NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL="YOUR_PUBLISHED_CSV_LINK_HERE"
+> NEXT_PUBLIC_GOOGLE_SHEET_CALENDAR_URL="PASTE_CALENDAR_CSV_URL"
+> NEXT_PUBLIC_GOOGLE_SHEET_GST_URL="PASTE_GST_CSV_URL"
+> NEXT_PUBLIC_GOOGLE_SHEET_CHECKLIST_URL="PASTE_CHECKLIST_CSV_URL"
+> NEXT_PUBLIC_GOOGLE_SHEET_TRACKER_URL="PASTE_TRACKER_CSV_URL"
 > ```
 
 ---
@@ -44,27 +54,26 @@ We will use the **Google Sheets "Publish to Web as CSV"** method. This approach:
 ## Proposed Changes
 
 ### [MODIFY] [page.js](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/app/page.js)
-- Add a new environment variable check for `NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL`.
-- Create a `calendarItems` state variable initialized with the hardcoded fallback list (`calData`).
-- Implement a helper function `parseCSV(csvText)` that:
-  - Splits text into rows and columns.
-  - Safely handles commas, quotes, and whitespace.
-  - Maps rows to the expected calendar object structure: `{ date, form, desc, cat, catLabel }`.
-- Add a `fetchGoogleSheetCalendar()` asynchronous function to:
-  - Fetch the published CSV URL.
-  - Parse the text and update the `calendarItems` state.
-  - Throw exceptions/log errors and display a toast alert if the spreadsheet structure is incorrect.
-- Run `fetchGoogleSheetCalendar()` inside the main `useEffect` on mount.
-- Update the Calendar rendering table to use `calendarItems` state instead of the static `calData` array.
+- Update state variables inside `Page()`:
+  - `gstListItems`: Initialized with `gstItems` fallback.
+  - `checklistItems`: Initialized with `checklists` fallback.
+  - `trackerDateItems`: Initialized with `trackerItems` fallback.
+- Implement specialized parsers:
+  - `parseGstCSV(text)`: Parses HSN, description, rate (integer), and category.
+  - `parseChecklistCSV(text)`: Groups rows with the same `title` and `icon` into nested arrays under that checklist object.
+  - `parseTrackerCSV(text)`: Parses title, form, and due date strings into JS Date objects.
+- Implement fetching functions:
+  - `fetchGstSheet()`: Queries `NEXT_PUBLIC_GOOGLE_SHEET_GST_URL`.
+  - `fetchChecklistSheet()`: Queries `NEXT_PUBLIC_GOOGLE_SHEET_CHECKLIST_URL`.
+  - `fetchTrackerSheet()`: Queries `NEXT_PUBLIC_GOOGLE_SHEET_TRACKER_URL`.
+- Update `useEffect` on mount to call all 4 fetchers.
+- Update JSX rendering blocks and search filters to consume state items (`gstListItems`, `checklistItems`, `trackerDateItems`).
 
 ---
 
 ## Verification Plan
 
-### Automated & Manual Verification
-- Test local execution:
-  - Launch dev server (`npm run dev`).
-  - Access the calendar page and confirm it displays the hardcoded events.
-  - Add your `NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL` to `.env.local` and restart the server.
-  - Verify that the calendar updates to display the entries from your Google Sheet.
-  - Make a change to a date in the Google Sheet, wait 2–5 minutes, click refresh, and confirm the change is reflected in the web table.
+### Manual Verification
+- Verify that without configuring the environment variables, the default local fallbacks load and display perfectly.
+- Set up a test Google Sheet with the 4 tabs and configure the variables in `.env.local`.
+- Reload localhost and confirm that editing any values in the sheet updates the respective module (Calendar, GST finder, Checklists, or Tracker) in real-time.
