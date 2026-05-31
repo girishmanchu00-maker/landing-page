@@ -1,81 +1,70 @@
-# Implementation Plan: Supabase Auth & Team Analytics Dashboard
+# Implementation Plan: Google Sheets Integration for Compliance Calendar
 
-This plan details the implementation of a secure user login system (email and password based) for team members, leading to an analytics dashboard that displays contact/consultation inquiries from the Supabase database.
+This plan details how to connect a Google Sheet to your Next.js application, allowing you to edit deadlines and compliance events in a spreadsheet and have them update on the website in real-time.
+
+---
+
+## How It Works
+
+We will use the **Google Sheets "Publish to Web as CSV"** method. This approach:
+- Is **100% free** and requires **no Google API keys** or service accounts.
+- Works in real-time (Google updates the published CSV feed within a few minutes of edits).
+- Includes a local code fallback so the website never breaks if the sheet is unavailable.
 
 ---
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Database Security Policies (RLS)**:
-> Since the dashboard displays data from the `consultations` table, you need to configure your Supabase policies so that only logged-in team members can query this data, while anonymous visitors can still submit the form. 
+> **Step 1: Set Up Your Google Sheet**
+> 1. Create a new Google Sheet.
+> 2. Create the following headers in row 1 (columns A to E):
+>    - **date** (e.g., `05`, `11`, `15`)
+>    - **form** (e.g., `GSTR-3B`, `GSTR-1`, `PF/ESI Deposit`)
+>    - **desc** (e.g., `GST monthly return for April supplies`)
+>    - **cat** (must be one of: `gst`, `it`, `tds`, `mca`, `pf`)
+>    - **catLabel** (e.g., `GST`, `Income Tax`, `TDS`, `MCA`, `PF/ESI`)
+> 3. Fill in your rows with compliance dates.
 > 
-> Please run the following SQL commands in your **Supabase Dashboard SQL Editor**:
+> **Step 2: Publish Your Sheet to the Web**
+> 1. In your Google Sheet, click **File** -> **Share** -> **Publish to web**.
+> 2. In the popup, change "Entire Document" to your specific sheet tab (e.g., `Sheet1`).
+> 3. Change "Web page" to **Comma-separated values (.csv)**.
+> 4. Click **Publish** and copy the generated link. It will look like this:
+>    `https://docs.google.com/spreadsheets/d/e/2PACX-XXXXX/pub?gid=0&single=true&output=csv`
 > 
-> ```sql
-> -- 1. Enable Row Level Security (if not already enabled)
-> ALTER TABLE consultations ENABLE ROW LEVEL SECURITY;
-> 
-> -- 2. Allow anyone (public/anonymous) to submit the consultation form
-> CREATE POLICY "Allow public inserts" ON consultations 
->   FOR INSERT 
->   TO anon 
->   WITH CHECK (true);
-> 
-> -- 3. Allow only logged-in team members to read/view consultation records
-> CREATE POLICY "Allow authenticated read" ON consultations 
->   FOR SELECT 
->   TO authenticated 
->   USING (true);
+> **Step 3: Update Environment Variables**
+> Add your published CSV link to your [.env.local](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/.env.local) file:
+> ```env
+> NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL="YOUR_PUBLISHED_CSV_LINK_HERE"
 > ```
 
 ---
 
 ## Proposed Changes
 
-### Next.js Client Application
-
-#### [MODIFY] [page.js](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/app/page.js)
-- Add state variables to track:
-  - `user`: Authenticated user session object (`null` if logged out).
-  - `authEmail`, `authPassword`: Inputs for the login/signup form.
-  - `authMode`: `'login'` or `'signup'` toggle.
-  - `consultations`: Array of database records loaded for the dashboard.
-  - `loadingConsultations`: Loading state boolean for database queries.
-- Add authentication hooks and listeners:
-  - Monitor auth state changes using `supabase.auth.onAuthStateChange`.
-  - Fetch active session on component mount.
-- Add handler functions:
-  - `handleAuth`: Handles Email/Password sign-in and sign-up using the Supabase auth client.
-  - `handleSignOut`: Calls `supabase.auth.signOut()` and resets active page state.
-  - `fetchConsultationsData`: Loads consultation records from Supabase table once user is authenticated.
-- Update Navigation:
-  - Replace the static "Consultation" button with a dynamic conditional layout:
-    - If logged out: Show "Login" button and "Consultation" CTA.
-    - If logged in: Show "Dashboard" tab button and "Sign Out" button.
-- Create UI Views:
-  - **Login / Sign Up page**: Form with custom styling adhering to the design rules.
-  - **Dashboard page**: Displays:
-    - Team Welcome header card.
-    - Analytics widgets: Total submissions count, breakdowns of inquiries by service type, and recent activity levels.
-    - Consultations CRM table: Rows displaying Name, Email, Phone, Service, Message, and submission timestamp.
-
-#### [MODIFY] [globals.css](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/app/globals.css)
-- Add `.auth-container` and `.auth-card` styles for the login form interface.
-- Add dashboard layout classes: `.db-header`, `.db-stats-grid`, `.db-table-section`, `.service-chart-bar` styling components.
-- Ensure light and dark mode colors are inherited correctly via CSS variables.
+### [MODIFY] [page.js](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/app/page.js)
+- Add a new environment variable check for `NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL`.
+- Create a `calendarItems` state variable initialized with the hardcoded fallback list (`calData`).
+- Implement a helper function `parseCSV(csvText)` that:
+  - Splits text into rows and columns.
+  - Safely handles commas, quotes, and whitespace.
+  - Maps rows to the expected calendar object structure: `{ date, form, desc, cat, catLabel }`.
+- Add a `fetchGoogleSheetCalendar()` asynchronous function to:
+  - Fetch the published CSV URL.
+  - Parse the text and update the `calendarItems` state.
+  - Throw exceptions/log errors and display a toast alert if the spreadsheet structure is incorrect.
+- Run `fetchGoogleSheetCalendar()` inside the main `useEffect` on mount.
+- Update the Calendar rendering table to use `calendarItems` state instead of the static `calData` array.
 
 ---
 
 ## Verification Plan
 
-### Automated & Client-side Verification
-- Inspect browser console logs during session checks.
-- Test authentication workflows:
-  - Sign up a new user using a test email and password.
-  - Sign out.
-  - Sign in using the created account.
-  - Attempt to sign in with incorrect password to verify error handling and toast output.
-- Verify database security:
-  - Log out and check that consultation records are not visible.
-  - Log in and verify that consultation records successfully load and match database records.
+### Automated & Manual Verification
+- Test local execution:
+  - Launch dev server (`npm run dev`).
+  - Access the calendar page and confirm it displays the hardcoded events.
+  - Add your `NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL` to `.env.local` and restart the server.
+  - Verify that the calendar updates to display the entries from your Google Sheet.
+  - Make a change to a date in the Google Sheet, wait 2–5 minutes, click refresh, and confirm the change is reflected in the web table.

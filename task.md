@@ -1,10 +1,8 @@
-# Checklist for Authentication & Dashboard Implementation
+# Checklist for Google Sheets Integration
 
-- `[x]` Configure authentication state & hooks in `app/page.js`
-- `[x]` Add action handler functions (`handleAuth`, `handleSignOut`, etc.) in `app/page.js`
-- `[x]` Implement consultation loader hook (`fetchConsultationsData`) in `app/page.js`
-- `[x]` Integrate login/logout buttons into desktop & mobile navigation in `app/page.js`
-- `[x]` Implement the Login view rendering block in `app/page.js`
-- `[x]` Implement the Team Dashboard view (analytics + inquiries grid) rendering block in `app/page.js`
-- `[x]` Add UI styling for Login card & Dashboard layout to `app/globals.css`
-- `[x]` Verify local execution and functionality
+- `[x]` Define `calendarItems` state and environment variable `NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL` in `app/page.js`
+- `[x]` Implement robust `parseCSV` helper function in `app/page.js`
+- `[x]` Implement `fetchGoogleSheetCalendar` in `app/page.js` to fetch and parse sheet data
+- `[x]` Add `fetchGoogleSheetCalendar` to `useEffect` mount in `app/page.js`
+- `[x]` Update rendering components to display the dynamic list in `app/page.js`
+- `[x]` Verify local execution and fallback functionality

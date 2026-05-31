@@ -147,6 +147,7 @@ export default function Page() {
   const [calMonth, setCalMonth] = useState(4); // May
   const [calYear, setCalYear] = useState(2026);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [calendarItems, setCalendarItems] = useState(calData);
 
   // Calculators Selection
   const [calcTab, setCalcTab] = useState('it');
@@ -220,6 +221,9 @@ export default function Page() {
     });
     setChecklistState(loadedProgress);
 
+    // Fetch Google Sheet Calendar if configured
+    fetchGoogleSheetCalendar();
+
     // Auth Session Sync
     if (supabase) {
       supabase.auth.getSession().then(({ data: { session } }) => {
@@ -251,6 +255,79 @@ export default function Page() {
 
 
   /* HANDLERS */
+  const parseCSV = (text) => {
+    if (!text) return [];
+    const lines = text.split(/\r?\n/);
+    if (lines.length < 2) return [];
+
+    const headers = [];
+    const headerLine = lines[0];
+    const headerMatches = headerLine.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || headerLine.split(',');
+    headerMatches.forEach(h => {
+      headers.push(h.trim().replace(/^["']|["']$/g, ''));
+    });
+
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const row = [];
+      let insideQuote = false;
+      let entry = '';
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        if (char === '"') {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          row.push(entry.trim().replace(/^["']|["']$/g, ''));
+          entry = '';
+        } else {
+          entry += char;
+        }
+      }
+      row.push(entry.trim().replace(/^["']|["']$/g, ''));
+
+      const item = {};
+      headers.forEach((header, index) => {
+        item[header] = row[index] || '';
+      });
+
+      if (item.date && item.form && item.desc) {
+        result.push({
+          date: String(item.date).padStart(2, '0'),
+          form: item.form,
+          desc: item.desc,
+          cat: item.cat || 'gst',
+          catLabel: item.catLabel || item.cat?.toUpperCase() || 'GST'
+        });
+      }
+    }
+    return result;
+  };
+
+  const fetchGoogleSheetCalendar = async () => {
+    const sheetCsvUrl = process.env.NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL;
+    if (!sheetCsvUrl) return;
+
+    try {
+      const res = await fetch(sheetCsvUrl);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const text = await res.text();
+      const parsedData = parseCSV(text);
+      if (parsedData && parsedData.length > 0) {
+        setCalendarItems(parsedData);
+      }
+    } catch (err) {
+      console.error('Error fetching calendar from Google Sheets:', err);
+      showToast(
+        'Google Sheet Sync Error',
+        'Could not load live calendar data. Falling back to local data.',
+        'error'
+      );
+    }
+  };
+
   const fetchConsultationsData = async () => {
     if (!supabase) return;
     setLoadingConsultations(true);
@@ -431,7 +508,7 @@ export default function Page() {
 
   // Calendar rows relative dates math
   const todayDate = new Date(2026, 4, 30); // May 30, 2026
-  const calendarRows = calData.filter(r => activeFilter === 'all' || r.cat === activeFilter);
+  const calendarRows = calendarItems.filter(r => activeFilter === 'all' || r.cat === activeFilter);
   const calendarCatColors = { gst: 'tag-gst', it: 'tag-it', tds: 'tag-it', mca: 'tag-mca', pf: 'tag-mca' };
 
   // Income Tax Computations
