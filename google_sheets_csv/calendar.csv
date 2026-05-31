@@ -1,0 +1,14 @@
+date,form,desc,cat,catLabel
+05,GSTR-3B,GST monthly return for April supplies,gst,GST
+07,TDS Payment,Deposit of TDS/TCS for April filings,tds,TDS
+10,GSTR-7,TDS return under GST regulations,gst,GST
+11,GSTR-1,Outward supplies statement (GSTR-1),gst,GST
+13,GSTR-6,Input Service Distributor (ISD) return,gst,GST
+15,PF/ESI Deposit,Provident Fund & ESI payments for April,pf,PF/ESI
+15,Form 24G,Government office TDS book entry summary,tds,TDS
+20,GSTR-5,Non-resident foreign taxpayer return filing,gst,GST
+25,GST PMT-06,Challan payment for QRMP quarterly taxpayers,gst,GST
+30,Form 26QB,Challan-cum-statement of TDS on property sale,tds,TDS
+31,ITR-1 / ITR-4,IT Return filing baseline for individuals,it,Income Tax
+31,Form 26Q,Quarterly TDS return statement for Q4 FY 2025-26,tds,TDS
+31,AOC-4,Company annual accounts financial filing with MCA,mca,MCA
