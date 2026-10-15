@@ -1,0 +1,5257 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+app/
+  globals.css
+  layout.js
+  page.js
+google_sheets_csv/
+  calendar.csv
+  checklists.csv
+  gst.csv
+  tracker.csv
+src/
+  .env.example
+.clinerules
+.cursorrules
+.env.example
+.gitignore
+.windsurfrules
+ai_coding_standards.md
+design_guidelines.md
+implementation_plan.md
+package.json
+task.md
+walkthrough.md
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="app/layout.js">
+import { Inter, Outfit } from 'next/font/google';
+import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-heading',
+  display: 'swap',
+});
+
+export const metadata = {
+  title: 'FinEzy — Premium CA & Compliance Resource Portal',
+  description: 'Calculate taxes (Income Tax, HRA, TDS, Advance Tax), search GST rates, track upcoming due dates, view ITR filing checklists, and explore Budget 2025 highlights. Built for CA professionals, students, and businesses.',
+  keywords: 'Income tax calculator, GST rate finder, CA compliance calendar, due date tracker, tax filing checklists, Budget 2025 slabs, HRA exemption calculator, TDS calculator',
+  openGraph: {
+    title: 'FinEzy — Premium CA & Compliance Resource Portal',
+    description: 'All-in-one financial resource suite with calculators, due dates, GST rate finder, checklist persistence, and modern dashboard.',
+    type: 'website',
+  },
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`} data-theme="light">
+      <body>
+        {children}
+      </body>
+    </html>
+  );
+}
+</file>
+
+<file path="google_sheets_csv/calendar.csv">
+date,form,desc,cat,catLabel
+05,GSTR-3B,GST monthly return for April supplies,gst,GST
+07,TDS Payment,Deposit of TDS/TCS for April filings,tds,TDS
+10,GSTR-7,TDS return under GST regulations,gst,GST
+11,GSTR-1,Outward supplies statement (GSTR-1),gst,GST
+13,GSTR-6,Input Service Distributor (ISD) return,gst,GST
+15,PF/ESI Deposit,Provident Fund & ESI payments for April,pf,PF/ESI
+15,Form 24G,Government office TDS book entry summary,tds,TDS
+20,GSTR-5,Non-resident foreign taxpayer return filing,gst,GST
+25,GST PMT-06,Challan payment for QRMP quarterly taxpayers,gst,GST
+30,Form 26QB,Challan-cum-statement of TDS on property sale,tds,TDS
+31,ITR-1 / ITR-4,IT Return filing baseline for individuals,it,Income Tax
+31,Form 26Q,Quarterly TDS return statement for Q4 FY 2025-26,tds,TDS
+31,AOC-4,Company annual accounts financial filing with MCA,mca,MCA
+</file>
+
+<file path="google_sheets_csv/checklists.csv">
+title,icon,item
+Individual ITR-1 Filing,📄,Form 16 from all employers for the financial year
+Individual ITR-1 Filing,📄,Bank interest certificate & savings ledger statement
+Individual ITR-1 Filing,📄,Investment receipts under Section 80C (PPF, LIC, ELSS)
+Individual ITR-1 Filing,📄,Home loan interest certificate (Form 12BB)
+Individual ITR-1 Filing,📄,Aadhaar card & PAN card linkage confirmation
+Individual ITR-1 Filing,📄,Form 26AS & Annual Information Statement (AIS) review
+GST Registration Process,🏢,PAN card copy of the business entity or proprietor
+GST Registration Process,🏢,Aadhaar card of primary partners or proprietor
+GST Registration Process,🏢,Registered office lease agreement or property tax receipt
+GST Registration Process,🏢,Cancelled cheque or bank statement with IFSC code
+GST Registration Process,🏢,Digital Signature Certificate (DSC) / EVC authorization
+GST Registration Process,🏢,NOC from property owner (if rented office premises)
+Private Limited Setup,🏛️,PAN & Aadhaar of all proposed directors
+Private Limited Setup,🏛️,Proof of identity (Voter ID, Passport, or Driving License)
+Private Limited Setup,🏛️,Electricity bill or gas utility bill of registered office address
+Private Limited Setup,🏛️,Draft Memorandum (MOA) and Articles of Association (AOA)
+Private Limited Setup,🏛️,DSC (Digital Signature Certificate) for directors
+Private Limited Setup,🏛️,DIR-2 consent form & declaration of non-acceptance of deposits
+Statutory Corporate Audit,📋,Final Trial Balance & general ledger accounts dump
+Statutory Corporate Audit,📋,Bank Reconciliation Statement (BRS) for all bank entries
+Statutory Corporate Audit,📋,Fixed Asset Register (FAR) detailing year depreciation rates
+Statutory Corporate Audit,📋,Form 3CD tax audit particulars compilation draft
+Statutory Corporate Audit,📋,Board meeting minutes approving draft financial statement schedules
+Statutory Corporate Audit,📋,Creditors & Debtors balance confirmation certificates
+</file>
+
+<file path="google_sheets_csv/gst.csv">
+hsn,desc,rate,cat
+8471,"Laptops, personal computers, and computing units",18,Electronics
+8517,Mobile phones and telephone transmitters,12,Electronics
+2517,"Portland cement, aluminous cement, and slag cement",28,Construction
+0402,"Milk, cream, curd, and fresh dairy products",0,Food & Dairy
+1001,"Wheat, meslin, rye, and standard wheat flour",0,Agriculture
+2402,"Cigarettes, cigars, and manufactured tobacco products",28,Tobacco
+8703,Passenger motor vehicles and hybrid cars,28,Automobiles
+8704,Commercial motor vehicles and goods transports,18,Automobiles
+9983,"Legal advisory, audit, and tax consulting services",18,Professional Services
+9985,"IT consulting, database, and software support services",18,Professional Services
+9954,"Contract construction, civil engineer services",12,Professional Services
+0801,"Coconuts, cashew nuts, and almond kernels",5,Food & Dairy
+3004,"Medicines, formulations, and pharmaceutical pills",12,Healthcare
+3005,"Surgical bandages, adhesive medical tape, and devices",12,Healthcare
+6101,"Readymade overcoats, jackets, and apparel items",12,Apparel
+6109,Cotton knitted T-shirts and undergarments,5,Apparel
+2710,"Petroleum crude oil, motor spirit, and diesel fuel",0,Fuel
+2711,LPG liquefied petroleum gas for households,5,Fuel
+8501,"Electric generators, dynamos, and solar motors",18,Electronics
+8507,Lithium-ion batteries and EV battery accumulator packs,5,Electronics
+</file>
+
+<file path="google_sheets_csv/tracker.csv">
+title,form,dueDate
+GSTR-3B Return Filing,GST,2026-05-20
+TDS Deposit Payment,TDS,2026-06-07
+GSTR-1 Outward Supplies,GST,2026-05-11
+ITR Filing Deadline,Income Tax,2026-07-31
+Advance Tax Instalment Q1,Income Tax,2026-06-15
+PF & ESI Monthly Deposit,PF/ESI,2026-05-15
+Form 26Q TDS Filing,TDS,2026-05-31
+AOC-4 Corporate Filing,MCA,2026-05-31
+</file>
+
+<file path=".clinerules">
+# FinEzy AI Coding Standards (.windsurfrules / .clinerules)
+
+You are an AI assistant working on the FinEzy codebase. Adhere strictly to these rules:
+
+## Technology Stack
+- Next.js 14 (App Router)
+- Vanilla CSS styling (No Tailwind, No Bootstrap)
+- Supabase Client SDK (`@supabase/supabase-js`)
+- Lucide React for Icons
+
+## Styling & Design Guidelines
+- Never hardcode HEX or RGB values. Always use HSL variables from globals.css (e.g., `var(--primary)`, `var(--bg-surface)`).
+- Fonts: Apply `--font-heading` (Outfit) for headings, `--font-body` (Inter) for standard elements.
+- Corners: Use `--radius-sm` (6px), `--radius-md` (10px), `--radius-lg` (16px), `--radius-xl` (24px).
+- Transitions: Apply `--transition-fast` (0.15s), `--transition-normal` (0.25s), or `--transition-slow` (0.4s) on interactive hover/focus states.
+- Glassmorphism: Use `var(--glass-bg)`, `var(--glass-border)`, and `backdrop-filter: blur(var(--glass-blur))`.
+
+## Coding Best Practices
+- Place `"use client"` at the top of client-side interactive component files.
+- Handle database transactions securely using client-side environment configs (`process.env.NEXT_PUBLIC_SUPABASE_URL`, `process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+- Maintain a proper heading structure (single `<h1>` per view, cascading semantic headings).
+- Use semantic HTML tags (`<main>`, `<nav>`, `<section>`, `<header>`) and unique testable IDs for forms.
+</file>
+
+<file path=".cursorrules">
+# FinEzy AI Coding Standards (.cursorrules)
+
+You are an AI assistant working on the FinEzy codebase. Adhere strictly to these rules:
+
+## Technology Stack
+- Next.js 14 (App Router)
+- Vanilla CSS styling (No Tailwind, No Bootstrap)
+- Supabase Client SDK (`@supabase/supabase-js`)
+- Lucide React for Icons
+
+## Styling & Design Guidelines
+- Never hardcode HEX or RGB values. Always use HSL variables from globals.css (e.g., `var(--primary)`, `var(--bg-surface)`).
+- Fonts: Apply `--font-heading` (Outfit) for headings, `--font-body` (Inter) for standard elements.
+- Corners: Use `--radius-sm` (6px), `--radius-md` (10px), `--radius-lg` (16px), `--radius-xl` (24px).
+- Transitions: Apply `--transition-fast` (0.15s), `--transition-normal` (0.25s), or `--transition-slow` (0.4s) on interactive hover/focus states.
+- Glassmorphism: Use `var(--glass-bg)`, `var(--glass-border)`, and `backdrop-filter: blur(var(--glass-blur))`.
+
+## Coding Best Practices
+- Place `"use client"` at the top of client-side interactive component files.
+- Handle database transactions securely using client-side environment configs (`process.env.NEXT_PUBLIC_SUPABASE_URL`, `process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+- Maintain a proper heading structure (single `<h1>` per view, cascading semantic headings).
+- Use semantic HTML tags (`<main>`, `<nav>`, `<section>`, `<header>`) and unique testable IDs for forms.
+</file>
+
+<file path=".gitignore">
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+src/.env
+src/.env.local
+src/.env.development.local
+src/.env.test.local
+src/.env.production.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+</file>
+
+<file path=".windsurfrules">
+# FinEzy AI Coding Standards (.windsurfrules / .clinerules)
+
+You are an AI assistant working on the FinEzy codebase. Adhere strictly to these rules:
+
+## Technology Stack
+- Next.js 14 (App Router)
+- Vanilla CSS styling (No Tailwind, No Bootstrap)
+- Supabase Client SDK (`@supabase/supabase-js`)
+- Lucide React for Icons
+
+## Styling & Design Guidelines
+- Never hardcode HEX or RGB values. Always use HSL variables from globals.css (e.g., `var(--primary)`, `var(--bg-surface)`).
+- Fonts: Apply `--font-heading` (Outfit) for headings, `--font-body` (Inter) for standard elements.
+- Corners: Use `--radius-sm` (6px), `--radius-md` (10px), `--radius-lg` (16px), `--radius-xl` (24px).
+- Transitions: Apply `--transition-fast` (0.15s), `--transition-normal` (0.25s), or `--transition-slow` (0.4s) on interactive hover/focus states.
+- Glassmorphism: Use `var(--glass-bg)`, `var(--glass-border)`, and `backdrop-filter: blur(var(--glass-blur))`.
+
+## Coding Best Practices
+- Place `"use client"` at the top of client-side interactive component files.
+- Handle database transactions securely using client-side environment configs (`process.env.NEXT_PUBLIC_SUPABASE_URL`, `process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+- Maintain a proper heading structure (single `<h1>` per view, cascading semantic headings).
+- Use semantic HTML tags (`<main>`, `<nav>`, `<section>`, `<header>`) and unique testable IDs for forms.
+</file>
+
+<file path="ai_coding_standards.md">
+# FinEzy AI Coding Standards & Copilot Instructions
+
+You are an AI coding assistant working on **FinEzy**, a premium CA and Compliance Portal built on Next.js, React, Vanilla CSS, and Supabase.
+
+When writing or editing code for this repository, you **MUST** strictly adhere to the following rules:
+
+---
+
+## 1. Technology Stack Constraints
+- **Framework**: Next.js 14 (App Router, standard layout structure).
+- **Core Libraries**: React 18, `@supabase/supabase-js` (for direct database/auth client calls), and `lucide-react` (for icons).
+- **Styling**: Vanilla CSS. **DO NOT** install TailwindCSS, Bootstrap, or any other UI framework unless explicitly requested.
+
+---
+
+## 2. Design System & CSS Rules
+All styling must strictly conform to the system defined in [design_guidelines.md](file:///c:/Coading - Seperate folder/Landing page/landing-page/design_guidelines.md):
+
+- **No Hardcoded Hex/RGB Colors**: Every color declaration must reference a CSS variable (e.g., `var(--bg-surface)`, `var(--primary)`). Hardcoded colors break Light/Dark theme switching.
+- **Theme Variables**:
+  - Main background: `var(--bg)`
+  - Card/Component background: `var(--bg-surface)`
+  - Primary blue: `var(--primary)`
+- **Fonts**: Use `--font-heading` (`Outfit`) for titles/headings and `--font-body` (`Inter`) for text/labels.
+- **Spacing/Radius**: Use existing variables: `--radius-sm` (6px), `--radius-md` (10px), `--radius-lg` (16px), `--radius-xl` (24px).
+- **Transitions**: Every interactive element (hover, focus, active states) must animate smoothly using:
+  - `--transition-fast` (0.15s)
+  - `--transition-normal` (0.25s)
+  - `--transition-slow` (0.4s)
+- **Glassmorphism**: When implementing sticky navigation or floating modals, use `background-color: var(--glass-bg)` and `backdrop-filter: blur(var(--glass-blur))`.
+
+---
+
+## 3. React & Next.js Best Practices
+- **Hydration & Directives**: Use `"use client"` at the top of files that utilize React hooks (`useState`, `useEffect`) or DOM-only APIs. Keep layouts and static content as Server Components where possible.
+- **State Management**: Prefer local component state or URL state (using hashes/query params) for UI navigation/filters to preserve deep-linkability.
+- **Component Modularity**: Keep components clean, reusable, and small. Do not bundle entire multi-page applications into a single massive file unless replicating existing dashboard views.
+
+---
+
+## 4. Supabase & Database Integrations
+- **Credentials**: Import variables dynamically using `process.env.NEXT_PUBLIC_SUPABASE_URL` and `process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY`. Do not hardcode secret keys.
+- **Error Handling**: Wrap Supabase requests in `try-catch` blocks and display clean Toast alerts indicating success or failure.
+- **Row Level Security (RLS)**: Design database operations keeping RLS policies in mind. Client-side database inserts (via anon key) must have an explicit `anon` write policy.
+
+---
+
+## 5. SEO & Accessibility
+- **Semantic HTML**: Always use appropriate layout containers (`<nav>`, `<header>`, `<main>`, `<section>`, `<article>`, `<footer>`).
+- **Headings**: Ensure each page has exactly one `<h1>` tag and builds a proper hierarchy downwards (`h2`, `h3`, `h4`).
+- **Interactive Element IDs**: Ensure all buttons, forms, and interactive nodes have unique, descriptive `id` or `class` attributes to facilitate automated testing.
+</file>
+
+<file path="design_guidelines.md">
+# FinEzy Design Guidelines & Style Guide
+
+This document defines the core design system, typography, colors, and layout guidelines for the FinEzy application. All new features and components must adhere to this system to maintain visual consistency, premium aesthetics, and responsive layout standards.
+
+---
+
+## 1. Design Philosophy
+- **Rich Aesthetics**: High-end styling using curated, harmonious color palettes, smooth gradient fills, and subtle borders.
+- **Glassmorphism**: Layered glass effects on sticky navigations and overlays, leveraging `backdrop-filter` for a premium, clean desktop/mobile transition.
+- **Micro-interactions**: Interactive components (cards, links, buttons) should respond to hover, focus, and state updates using custom transition curves.
+- **Semantic Structure**: Maintain clean HTML5 nesting (`<nav>`, `<main>`, `<section>`, `<footer>`) with unique IDs for layout blocks and forms.
+
+---
+
+## 2. Typography
+
+All text elements must use CSS variable font families. Do not hardcode typography values.
+
+| Element | Font Family | Variable | Standard Sizes / Weights |
+| :--- | :--- | :--- | :--- |
+| **Headings** (`h1`, `h2`, `h3`, `h4`) | `Outfit` | `--font-heading` | **Bold (700/800)**: `h1` (2.2rem / 3.2rem in Hero), `h2` (1.75rem / 2rem), `h3` (1.3rem) |
+| **Body / UI** (`p`, `span`, `button`, etc.) | `Inter` | `--font-body` | **Regular/Medium (400/500/600)**: 15px base size, 1.6 line height |
+
+---
+
+## 3. Colors & Theme System
+
+We use HSL color tokens to easily transition between Light and Dark themes. The active theme is controlled by the `[data-theme="light|dark"]` attribute on the root HTML tag.
+
+### A. Theme Colors
+
+```css
+/* Light (Default) */
+--bg: hsl(210, 40%, 99%);             /* Slate-tinted off-white background */
+--bg-alt: hsl(210, 40%, 96%);         /* Subtle gray-blue layout panels */
+--bg-surface: hsl(0, 0%, 100%);       /* Card backgrounds */
+--bg-surface-alt: hsl(210, 40%, 97%);  /* Section fills / tables */
+--border: hsl(214, 32%, 91%);         /* Default border */
+--border-focus: hsl(224, 76%, 60%);   /* Active form border */
+
+/* Dark Theme */
+--bg: hsl(224, 71%, 4%);
+--bg-alt: hsl(224, 71%, 6%);
+--bg-surface: hsl(224, 71%, 8%);
+--bg-surface-alt: hsl(224, 71%, 11%);
+--border: hsl(224, 30%, 16%);
+--border-focus: hsl(217, 91%, 60%);
+```
+
+### B. Typography Colors
+
+- **Primary Text** (`--text-primary`): `hsl(222, 47%, 12%)` (Light) / `hsl(210, 40%, 98%)` (Dark)
+- **Secondary Text** (`--text-secondary`): `hsl(215, 16%, 40%)` (Light) / `hsl(215, 20%, 75%)` (Dark)
+- **Tertiary/Muted Text** (`--text-tertiary`): `hsl(215, 13%, 62%)` (Light) / `hsl(215, 15%, 52%)` (Dark)
+
+### C. Branding & Semantic Colors
+
+- **Primary Brand Color** (`--primary`): `hsl(224, 76%, 48%)` (Light Blue) / `hsl(217, 91%, 56%)` (Dark Accent)
+- **Primary Light** (`--primary-light`): `hsl(220, 95%, 96%)` / `hsl(217, 91%, 12%)`
+- **Primary Dark** (`--primary-dark`): `hsl(224, 76%, 36%)` / `hsl(217, 91%, 75%)`
+
+| Semantic Meaning | Color Variable | Light Hex/HSL | Dark Hex/HSL |
+| :--- | :--- | :--- | :--- |
+| **Success** (Safe status, GST, complete check) | `--success` | `hsl(142, 72%, 29%)` | `hsl(142, 68%, 45%)` |
+| **Warning** (Filing soon, MCA, alert updates) | `--warning` | `hsl(38, 92%, 46%)` | `hsl(38, 92%, 52%)` |
+| **Danger** (Overdue/Urgent status, SEBI alerts) | `--danger` | `hsl(0, 84%, 55%)` | `hsl(0, 84%, 60%)` |
+
+---
+
+## 4. Spacing, Borders, & Shadows
+
+Consistent dimensions and radii are critical to keeping the interface looking polished.
+
+### Border Radii
+- **Small Corners** (`--radius-sm`): `6px` (e.g. Logo containers, micro buttons)
+- **Medium Corners** (`--radius-md`): `10px` (e.g. Buttons, filter pills, smaller input controls)
+- **Large Corners** (`--radius-lg`): `16px` (e.g. Standard cards, tables, dashboard panels)
+- **Extra Large Corners** (`--radius-xl`): `24px` (e.g. Hero panels, marketing cards)
+- **Pill/Circle** (`--radius-full`): `9999px` (e.g. Badges, tags, toggle controls)
+
+### Shadows
+- **Small** (`--shadow-sm`): `0 1px 2px 0 rgba(15, 23, 42, 0.05)` (Default card resting state)
+- **Medium** (`--shadow-md`): `0 4px 6px -1px rgba(15, 23, 42, 0.05)` (Focus/active panel container)
+- **Large** (`--shadow-lg`): `0 10px 15px -3px rgba(15, 23, 42, 0.05)` (Hover active cards/menus)
+- **Extra Large** (`--shadow-xl`): `0 20px 25px -5px rgba(15, 23, 42, 0.06)` (Modals, popup dropdowns)
+
+---
+
+## 5. UI Elements & Component Standards
+
+### A. Navigation Bar (`.glass-nav`)
+- Must remain sticky at the top (`top: 0`, `z-index: 100`).
+- Background uses `--glass-bg` with a backdrop filter (`blur(16px)`).
+- Borders use `--glass-border` with a bottom edge separator.
+- Contains high-contrast text and a brand logo styled with `--primary`.
+
+### B. Interactive Buttons
+- **Primary Buttons** (`.btn-primary`): Solid primary color, bold white text, subtle hover lift (`translateY(-1px)`), and primary-colored box-shadows.
+- **Secondary Buttons** (`.btn-secondary`): Outlined container, background matches surface. Hover transitions to `--bg-alt` and includes right-facing transitions on nested icons (e.g., arrow SVG shifts `translateX(4px)`).
+- **Toggles & Icon buttons** (`.icon-btn-toggle`): Single icon with dynamic border and light background transition.
+
+### C. Cards (`.feature-card`, `.stat-card`)
+- Card structures must use flex layouts to vertically distribute footer metadata.
+- Borders default to `--border` but transition to `--primary` on hover.
+- Must include a subtle transform transition (`translateY(-4px)`) and a shadow expansion (`--shadow-lg`) when hovered.
+
+### D. Form Elements
+- Inputs, selects, and textareas must have their custom focus outlines disabled.
+- On focus, borders must highlight to `--border-focus` or `--primary` with a light border-shadow ring.
+- Labels should always be clearly structured using standard tags with a color of `--text-secondary`.
+
+---
+
+## 6. Transitions & Animations
+
+For a cohesive experience, all hover, active states, and page navigation must use standard timing variables.
+
+- **Fast** (`--transition-fast`): `0.15s cubic-bezier(0.4, 0, 0.2, 1)` (Used for hover states, color changes, and buttons)
+- **Normal** (`--transition-normal`): `0.25s cubic-bezier(0.4, 0, 0.2, 1)` (Used for layouts, theme switching, and accordion cards)
+- **Slow** (`--transition-slow`): `0.4s cubic-bezier(0.4, 0, 0.2, 1)` (Used for hero animations, multi-step sections, and large panels)
+
+---
+
+## 7. Scalability & Development Best Practices
+
+1. **Class-based Utilities over Inline Styles**: Always leverage predefined global utility classes (e.g., `.text-center`, `.rounded-lg`, `.flex-center-y`) before defining custom component rules.
+2. **Never Hardcode Theme Hexes**: Always write color rules referencing CSS variables (e.g., `background-color: var(--bg-surface)`). Hardcoded colors will break the dark/light toggle.
+3. **Responsive Media Queries**: Build layouts using CSS Grid and Flexbox with responsive column variables (e.g., `grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))`). Avoid hardcoding pixel widths on containers.
+4. **Unique Semantic IDs**: Provide clear and unique `id` attributes for important sections, interactive buttons, and input fields to simplify automation and layout testing.
+</file>
+
+<file path="app/globals.css">
+/* DESIGN SYSTEM & CONSTANTS */
+:root {
+  /* Fonts */
+  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Theme: Light (Default) */
+  --bg-color-h: 210;
+  --bg-color-s: 40%;
+  --bg-color-l: 99%;
+  --bg: hsl(var(--bg-color-h), var(--bg-color-s), var(--bg-color-l));
+  --bg-alt: hsl(210, 40%, 96%);
+  --bg-surface: hsl(0, 0%, 100%);
+  --bg-surface-alt: hsl(210, 40%, 97%);
+  
+  --border: hsl(214, 32%, 91%);
+  --border-focus: hsl(224, 76%, 60%);
+  
+  --text-primary: hsl(222, 47%, 12%);
+  --text-secondary: hsl(215, 16%, 40%);
+  --text-tertiary: hsl(215, 13%, 62%);
+  
+  --primary: hsl(224, 76%, 48%);
+  --primary-light: hsl(220, 95%, 96%);
+  --primary-dark: hsl(224, 76%, 36%);
+  
+  --success: hsl(142, 72%, 29%);
+  --success-light: hsl(143, 85%, 94%);
+  --warning: hsl(38, 92%, 46%);
+  --warning-light: hsl(39, 100%, 94%);
+  --danger: hsl(0, 84%, 55%);
+  --danger-light: hsl(0, 86%, 95%);
+  
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(226, 232, 240, 0.85);
+  --glass-blur: 16px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+  
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Theme: Dark override */
+[data-theme="dark"] {
+  --bg-color-h: 224;
+  --bg-color-s: 71%;
+  --bg-color-l: 4%;
+  --bg: hsl(var(--bg-color-h), var(--bg-color-s), var(--bg-color-l));
+  --bg-alt: hsl(224, 71%, 6%);
+  --bg-surface: hsl(224, 71%, 8%);
+  --bg-surface-alt: hsl(224, 71%, 11%);
+  
+  --border: hsl(224, 30%, 16%);
+  --border-focus: hsl(217, 91%, 60%);
+  
+  --text-primary: hsl(210, 40%, 98%);
+  --text-secondary: hsl(215, 20%, 75%);
+  --text-tertiary: hsl(215, 15%, 52%);
+  
+  --primary: hsl(217, 91%, 56%);
+  --primary-light: hsl(217, 91%, 12%);
+  --primary-dark: hsl(217, 91%, 75%);
+  
+  --success: hsl(142, 68%, 45%);
+  --success-light: hsl(142, 68%, 10%);
+  --warning: hsl(38, 92%, 52%);
+  --warning-light: hsl(38, 92%, 10%);
+  --danger: hsl(0, 84%, 60%);
+  --danger-light: hsl(0, 84%, 12%);
+  
+  --glass-bg: rgba(10, 15, 30, 0.8);
+  --glass-border: rgba(30, 41, 59, 0.8);
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.35), 0 4px 6px -4px rgba(0, 0, 0, 0.25);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.45), 0 8px 10px -6px rgba(0, 0, 0, 0.35);
+}
+
+/* RESET & LAYOUT */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  height: -webkit-fill-available;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background-color: var(--bg);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+h1 { font-size: 2.2rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.3rem; }
+
+/* UTILITY CLASSES */
+.text-center { text-align: center; }
+.text-success { color: hsl(var(--success)) !important; }
+.text-danger { color: hsl(var(--danger)) !important; }
+.text-warning { color: hsl(var(--warning)) !important; }
+.rounded-lg { border-radius: var(--radius-lg); }
+.border { border: 1px solid var(--border); }
+.bg-surface-alt { background-color: var(--bg-surface-alt); }
+.flex-center-y { display: flex; align-items: center; }
+
+/* NAV BAR STYLINGS */
+.glass-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+.nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.logo {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background-color: var(--primary);
+  color: #fff;
+}
+
+.logo-icon i, .logo-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.brand-highlight {
+  color: var(--primary);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-btn {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.nav-btn:hover, .nav-btn.active {
+  color: var(--primary);
+  background-color: var(--primary-light);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-btn-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  background-color: var(--bg-surface);
+  transition: all var(--transition-fast);
+}
+
+.icon-btn-toggle:hover {
+  background-color: var(--bg-alt);
+  color: var(--text-primary);
+}
+
+.icon-btn-toggle i, .icon-btn-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.nav-cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+.nav-cta:hover {
+  background-color: var(--primary-dark);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
+}
+
+.nav-cta i, .nav-cta svg {
+  width: 16px;
+  height: 16px;
+}
+
+.mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+/* MOBILE DROPDOWN NAVIGATION */
+.mobile-nav-overlay {
+  display: none;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 99;
+  box-shadow: var(--shadow-lg);
+  padding: 16px 24px;
+}
+
+.mobile-nav-overlay.active {
+  display: block;
+}
+
+.mobile-menu-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mobile-nav-btn {
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.mobile-nav-btn.active, .mobile-nav-btn:hover {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.mobile-nav-cta {
+  text-align: center;
+  padding: 12px;
+  background-color: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+/* MAIN CONTAINER */
+.main-container {
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+  animation: fadeIn var(--transition-normal) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* HERO SECTION */
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  padding: 80px 48px;
+  margin-bottom: 32px;
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-alt) 100%);
+  border: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.hero-bg-shapes .shape {
+  position: absolute;
+  border-radius: var(--radius-full);
+  filter: blur(80px);
+  z-index: 0;
+  opacity: 0.6;
+}
+
+.hero-bg-shapes .shape-1 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, var(--primary) 0%, rgba(255, 255, 255, 0) 70%);
+  top: -80px;
+  left: -80px;
+}
+
+.hero-bg-shapes .shape-2 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, hsl(142, 72%, 60%) 0%, rgba(255, 255, 255, 0) 70%);
+  bottom: -100px;
+  right: -100px;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.hero-badge i, .hero-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.hero-content h1 {
+  font-size: 3.2rem;
+  font-weight: 800;
+  margin-bottom: 18px;
+  letter-spacing: -0.02em;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary) 30%, hsl(220, 90%, 65%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-content p {
+  color: var(--text-secondary);
+  font-size: 1.15rem;
+  margin-bottom: 32px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background-color: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  transition: all var(--transition-fast);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-primary i, .btn-primary svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-alt);
+  border-color: var(--text-tertiary);
+  transform: translateY(-1px);
+}
+
+.btn-secondary i, .btn-secondary svg {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--transition-fast);
+}
+
+.btn-secondary:hover i, .btn-secondary:hover svg {
+  transform: translateX(4px);
+}
+
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.stat-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-alt);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon i, .stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.stat-icon.highlight {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.stat-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* SECTION CONTAINER GENERAL */
+.section-container {
+  padding: 48px 0;
+  margin-bottom: 24px;
+}
+
+.section-container.border {
+  padding: 40px;
+  margin-bottom: 48px;
+}
+
+.section-header {
+  margin-bottom: 36px;
+}
+
+.section-header.text-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.section-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.section-header h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.section-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  margin-top: 6px;
+  max-width: 600px;
+}
+
+/* FEATURES GRID */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.feature-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+
+.feature-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.feat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  background-color: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.feat-icon i, .feat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.feature-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.feature-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 24px;
+  flex: 1;
+}
+
+.feat-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: auto;
+}
+
+.feat-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: var(--bg-alt);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.feat-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary);
+  transition: gap var(--transition-fast);
+}
+
+.feature-card:hover .feat-link {
+  gap: 8px;
+}
+
+.feat-link i, .feat-link svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ALERT BOARD / UPDATES */
+.updates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.update-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast);
+}
+
+.update-card:hover {
+  border-color: var(--text-tertiary);
+}
+
+.update-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.update-date {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.update-date i, .update-date svg {
+  width: 12px;
+  height: 12px;
+}
+
+.category-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.category-tag.tag-gst { background-color: var(--success-light); color: var(--success); }
+.category-tag.tag-it { background-color: var(--primary-light); color: var(--primary); }
+.category-tag.tag-mca { background-color: var(--warning-light); color: var(--warning); }
+.category-tag.tag-sebi { background-color: var(--danger-light); color: var(--danger); }
+
+.update-card h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+/* COMPLIANCE CALENDAR TAB */
+.calendar-panel {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  margin-top: 12px;
+}
+
+.cal-header {
+  margin-bottom: 24px;
+}
+
+.cal-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+}
+
+.month-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.control-btn:hover {
+  background-color: var(--bg-alt);
+  border-color: var(--text-tertiary);
+}
+
+.control-btn i, .control-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.current-month-lbl {
+  font-size: 1.15rem;
+  font-weight: 700;
+  min-width: 140px;
+  text-align: center;
+}
+
+.filter-pills-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background-color: var(--bg-surface);
+  transition: all var(--transition-fast);
+}
+
+.filter-pill:hover {
+  background-color: var(--bg-alt);
+  color: var(--text-primary);
+}
+
+.filter-pill.active {
+  background-color: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* DATA TABLE STYLINGS */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.data-table th {
+  padding: 14px 16px;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  color: var(--text-secondary);
+  background-color: var(--bg-surface-alt);
+  border-bottom: 2px solid var(--border);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.data-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.data-table tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.data-table tbody tr:hover td {
+  background-color: var(--bg-surface-alt);
+}
+
+/* STATUS BADGES */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+}
+
+.status-badge.urgent { background-color: var(--danger-light); color: var(--danger); }
+.status-badge.soon { background-color: var(--warning-light); color: var(--warning); }
+.status-badge.safe { background-color: var(--success-light); color: var(--success); }
+
+/* CALCULATORS TABS */
+.calculator-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.calc-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.calc-tab-btn i, .calc-tab-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.calc-tab-btn:hover {
+  background-color: var(--bg-alt);
+  color: var(--text-primary);
+}
+
+.calc-tab-btn.active {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+/* CALCULATOR PANES Layout */
+.calculator-view {
+  display: none;
+}
+
+.calculator-view.active {
+  display: block;
+  animation: fadeIn var(--transition-normal);
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.calc-inputs-pane {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+.calc-inputs-pane h3, .calc-results-pane h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  border-left: 3px solid var(--primary);
+  padding-left: 10px;
+}
+
+.input-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-prefix {
+  position: absolute;
+  left: 14px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  font-size: 1rem;
+}
+
+.input-wrapper input {
+  padding-left: 28px !important;
+}
+
+.input-group input, .input-group select, .input-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: all var(--transition-fast);
+}
+
+.input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.input-group-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.input-hint {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.deductions-toggle-area {
+  margin-top: 14px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border);
+  animation: slideDown var(--transition-normal);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* RESULTS PANE STYLINGS */
+.calc-results-pane {
+  background-color: var(--primary-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+}
+
+/* Visual Breakdown Bar */
+.visual-breakdown-bar {
+  margin-bottom: 24px;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+
+.breakdown-title {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+}
+
+.bar-progress-container {
+  display: flex;
+  height: 10px;
+  background-color: var(--bg-alt);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.bar-slice {
+  height: 100%;
+  transition: width var(--transition-slow) ease;
+}
+
+.slice-deductions { background-color: hsl(142, 68%, 45%); }
+.slice-taxable { background-color: var(--primary); }
+.slice-liability { background-color: var(--danger); }
+
+.bar-legend {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.bar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bar-legend .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.bar-legend .dot.ded { background-color: hsl(142, 68%, 45%); }
+.bar-legend .dot.taxable { background-color: var(--primary); }
+.bar-legend .dot.liability { background-color: var(--danger); }
+
+/* Results elements */
+.results-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.res-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 0.9rem;
+}
+
+.res-item.border-top {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 6px;
+}
+
+.res-lbl {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.res-val {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.res-item.total-row {
+  border-top: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  padding: 14px 0;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.res-item.total-row .res-lbl {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+}
+
+.highlight-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.calc-info-note {
+  margin-top: 20px;
+  padding: 14px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: 10px;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.calc-info-note i, .calc-info-note svg {
+  width: 16px;
+  height: 16px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.calc-info-note span {
+  flex: 1;
+}
+
+/* Timeline schedule for Advance Tax */
+.installments-timeline {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.installments-timeline h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.timeline-step {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-left: 2px solid var(--primary);
+  background-color: var(--bg-surface);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+}
+
+.step-date {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.step-amt {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* DUE DATE TRACKER TAB */
+.tracker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 12px;
+}
+
+.tracker-card {
+  position: relative;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+  overflow: hidden;
+}
+
+.tracker-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Urgency styles */
+.tracker-card.urgent { border-top: 4px solid var(--danger); }
+.tracker-card.soon { border-top: 4px solid var(--warning); }
+.tracker-card.safe { border-top: 4px solid var(--success); }
+
+.t-days {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.t-days.urgent { color: var(--danger); }
+.t-days.soon { color: var(--warning); }
+.t-days.safe { color: var(--success); }
+
+.t-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+.t-date {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.t-form {
+  align-self: flex-start;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background-color: var(--bg-alt);
+  color: var(--text-secondary);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+}
+
+/* DOCUMENT CHECKLIST TAB */
+.checklist-wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 12px;
+}
+
+.checklist-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.checklist-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ch-icon {
+  font-size: 1.25rem;
+}
+
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--bg-alt);
+  cursor: pointer;
+  user-select: none;
+}
+
+.check-item:last-of-type {
+  border-bottom: none;
+}
+
+.check-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background-color: var(--bg-surface);
+  transition: all var(--transition-fast);
+}
+
+.check-box i, .check-box svg {
+  width: 12px;
+  height: 12px;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all var(--transition-fast);
+}
+
+.check-box.done {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.check-box.done i, .check-box.done svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.check-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  transition: all var(--transition-fast);
+}
+
+.check-label.done {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+.progress-bar-container {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.progress-bar {
+  height: 6px;
+  background-color: var(--bg-alt);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--primary);
+  width: 0%;
+  border-radius: var(--radius-full);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prog-txt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+/* GST FINDER LAYOUT */
+.finder-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 12px;
+}
+
+.search-box-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 480px;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-tertiary);
+}
+
+.search-box-wrapper input {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.search-box-wrapper input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 14px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-clear-btn:hover {
+  color: var(--text-primary);
+}
+
+.search-clear-btn i, .search-clear-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.rate-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+}
+
+.rate-pill.r0 { background-color: var(--success-light); color: var(--success); }
+.rate-pill.r5 { background-color: var(--primary-light); color: var(--primary); }
+.rate-pill.r12 { background-color: var(--warning-light); color: var(--warning); }
+.rate-pill.r18 { background-color: var(--danger-light); color: var(--danger); }
+.rate-pill.r28 { background-color: hsl(0, 84%, 15%); color: hsl(0, 84%, 60%); }
+
+/* UNION BUDGET DASHBOARD */
+.budget-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 12px;
+}
+
+.budget-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.budget-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.budget-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.budget-card h3 i, .budget-card h3 svg {
+  width: 18px;
+  height: 18px;
+  color: var(--primary);
+}
+
+.budget-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.b-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--bg-alt);
+}
+
+.b-list-item:last-child {
+  border-bottom: none;
+}
+
+.b-list-item span {
+  color: var(--text-secondary);
+}
+
+.b-list-item strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.b-list-item .badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.b-list-item .badge-success {
+  background-color: var(--success-light);
+  color: var(--success);
+}
+
+.budget-summary-panel {
+  background-color: var(--primary-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.budget-summary-panel .panel-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background-color: var(--primary);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.budget-summary-panel .panel-icon i, .budget-summary-panel .panel-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.budget-summary-panel .panel-text {
+  flex: 1;
+}
+
+/* CONTACT PAGE STYLINGS */
+.contact-layout {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 36px;
+  margin-top: 12px;
+}
+
+.contact-details-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.contact-item .c-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background-color: var(--primary-light);
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.contact-item .c-icon i, .contact-item .c-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.c-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.c-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  letter-spacing: 0.05em;
+}
+
+.c-val {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.highlight-whatsapp {
+  border-color: hsl(142, 70%, 40%);
+  background-color: var(--success-light);
+}
+
+.highlight-whatsapp .c-icon {
+  background-color: var(--success);
+  color: #fff;
+}
+
+.highlight-whatsapp .c-val {
+  color: var(--success);
+}
+
+/* Form Styles */
+.contact-form {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: all var(--transition-fast);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+  transition: all var(--transition-fast);
+  margin-top: 8px;
+}
+
+.submit-btn:hover {
+  background-color: var(--primary-dark);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
+}
+
+.submit-btn i, .submit-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* FOOTER SECTION */
+footer {
+  background-color: var(--bg-alt);
+  border-top: 1px solid var(--border);
+  padding: 56px 24px 28px;
+  margin-top: 60px;
+  color: var(--text-secondary);
+}
+
+.footer-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 1fr;
+  gap: 40px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-brand p {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  max-width: 320px;
+}
+
+.footer-links-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-links-col h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.footer-links-col button {
+  text-align: left;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.footer-links-col button:hover {
+  color: var(--primary);
+}
+
+.footer-copy-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.8rem;
+}
+
+.disclaimer {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+/* CUSTOM TOAST NOTIFICATION STYLES */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-xl);
+  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+  min-width: 320px;
+  max-width: 420px;
+  animation: toastIn var(--transition-normal) forwards, toastOut var(--transition-normal) 4.5s forwards;
+  position: relative;
+  overflow: hidden;
+}
+
+.toast::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+.toast.toast-success::before { background-color: hsl(var(--success)); }
+.toast.toast-error::before { background-color: hsl(var(--danger)); }
+.toast.toast-info::before { background-color: var(--primary); }
+
+.toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+}
+
+.toast-success .toast-icon { background-color: var(--success-light); color: var(--success); }
+.toast-error .toast-icon { background-color: var(--danger-light); color: var(--danger); }
+.toast-info .toast-icon { background-color: var(--primary-light); color: var(--primary); }
+
+.toast-icon i, .toast-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.toast-message {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.toast-close {
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-close:hover {
+  color: var(--text-primary);
+}
+
+.toast-close i, .toast-close svg {
+  width: 14px;
+  height: 14px;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toastOut {
+  0%, 90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-12px) scale(0.95); pointer-events: none; }
+}
+
+/* MEDIA QUERIES / RESPONSIVENESS */
+@media (max-width: 1024px) {
+  .hero-content h1 {
+    font-size: 2.8rem;
+  }
+  .contact-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.5rem; }
+  
+  .nav-links {
+    display: none;
+  }
+  
+  .mobile-toggle {
+    display: flex;
+  }
+  
+  .hero-section {
+    padding: 48px 24px;
+  }
+  
+  .hero-content h1 {
+    font-size: 2.2rem;
+  }
+  
+  .hero-content p {
+    font-size: 1rem;
+  }
+  
+  .calc-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  
+  .nav-cta span {
+    display: none;
+  }
+  
+  .nav-cta {
+    padding: 10px;
+    border-radius: var(--radius-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .main-container {
+    padding: 16px;
+  }
+  .hero-section {
+    padding: 40px 16px;
+  }
+  .hero-content h1 {
+    font-size: 1.8rem;
+  }
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .cal-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-pills-container {
+    justify-content: flex-start;
+  }
+  .calculator-tabs {
+    flex-direction: column;
+  }
+  .calc-tab-btn {
+    width: 100%;
+  }
+  .toast {
+    min-width: calc(100vw - 32px);
+    right: 16px;
+    bottom: 16px;
+  }
+}
+
+/* MEMBER AUTHENTICATION & LOGIN */
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 180px);
+  padding: 40px 16px;
+}
+
+.auth-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-xl);
+  transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.auth-logo h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.auth-logo h2 span {
+  color: var(--primary);
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 28px;
+}
+
+.auth-toggle {
+  display: flex;
+  background-color: var(--bg-surface-alt);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+}
+
+.auth-toggle-btn {
+  flex: 1;
+  text-align: center;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.auth-toggle-btn.active {
+  background-color: var(--bg-surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-form .form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  transition: all var(--transition-fast);
+}
+
+.auth-form input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-top: 10px;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+  transform: translateY(-1px);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* TEAM PORTAL & DASHBOARD LAYOUT */
+.dashboard-wrapper {
+  padding: 12px 0 48px 0;
+  animation: fadeIn var(--transition-normal) forwards;
+}
+
+.dashboard-header-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.db-header-title h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+
+.db-header-title p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.db-badge {
+  display: inline-block;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.db-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.db-stat-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.db-stat-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.db-stat-icon-wrapper.blue { background-color: var(--primary-light); color: var(--primary); }
+.db-stat-icon-wrapper.green { background-color: var(--success-light); color: var(--success); }
+.db-stat-icon-wrapper.orange { background-color: var(--warning-light); color: var(--warning); }
+
+.db-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.db-stat-number {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.db-stat-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.dashboard-two-column {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.dashboard-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.card-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Service Chart Bar Widget */
+.chart-bar-item {
+  margin-bottom: 16px;
+}
+
+.chart-bar-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+.chart-bar-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.chart-bar-count {
+  color: var(--text-secondary);
+}
+
+.chart-bar-track {
+  height: 8px;
+  background-color: var(--bg-surface-alt);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.chart-bar-fill {
+  height: 100%;
+  background-color: var(--primary);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+/* Operations Guide */
+.ops-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ops-item {
+  display: flex;
+  gap: 14px;
+}
+
+.ops-bullet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background-color: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.ops-content strong {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.ops-content p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+/* Table card & clamps */
+.table-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  margin-bottom: 12px;
+}
+
+.total-rows-badge {
+  font-size: 0.75rem;
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.table-msg-clamp {
+  display: block;
+  font-size: 0.85rem;
+  max-width: 400px;
+}
+
+/* Utility Animations */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.btn-signout:hover {
+  background-color: var(--danger-light) !important;
+  color: var(--danger) !important;
+}
+
+/* Responsive Overrides */
+@media (max-width: 900px) {
+  .dashboard-two-column {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .auth-card {
+    padding: 32px 20px;
+  }
+  .db-header-title h1 {
+    font-size: 1.8rem;
+  }
+}
+</file>
+
+<file path="src/.env.example">
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL="your-supabase-url"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
+SUPABASE_PUBLISHABLE_KEY="your-supabase-publishable-key"
+SUPABASE_JWT_SECRET="your-supabase-jwt-secret"
+SUPABASE_SECRET_KEY="your-supabase-secret-key"
+SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
+
+# Postgres Database Configuration
+POSTGRES_USER="your-database-user"
+POSTGRES_PASSWORD="your-database-password"
+POSTGRES_DATABASE="your-database-name"
+POSTGRES_HOST="your-database-host"
+POSTGRES_URL="your-database-connection-url"
+POSTGRES_PRISMA_URL="your-database-prisma-connection-url"
+POSTGRES_URL_NON_POOLING="your-database-non-pooling-connection-url"
+
+# Google Sheets CMS Integration
+NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL="your-published-google-sheet-csv-url"
+</file>
+
+<file path=".env.example">
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL="your-supabase-url"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
+SUPABASE_PUBLISHABLE_KEY="your-supabase-publishable-key"
+SUPABASE_JWT_SECRET="your-supabase-jwt-secret"
+SUPABASE_SECRET_KEY="your-supabase-secret-key"
+SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
+
+# Postgres Database Configuration
+POSTGRES_USER="your-database-user"
+POSTGRES_PASSWORD="your-database-password"
+POSTGRES_DATABASE="your-database-name"
+POSTGRES_HOST="your-database-host"
+POSTGRES_URL="your-database-connection-url"
+POSTGRES_PRISMA_URL="your-database-prisma-connection-url"
+POSTGRES_URL_NON_POOLING="your-database-non-pooling-connection-url"
+
+# Google Sheets CMS Integration
+NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL="your-published-google-sheet-csv-url"
+</file>
+
+<file path="walkthrough.md">
+# Walkthrough: Member Login & Google Sheets Integration
+
+We have successfully integrated a complete, secure email/password authentication system, a premium Team Analytics Dashboard, and a real-time Google Sheets calendar CMS integration into the FinEzy compliance portal application.
+
+---
+
+## Changes Implemented
+
+### 1. Member Login & Team Analytics Dashboard
+- **Navigation Updates**: Added dynamic conditional links in the navbar (Member Login button for guest users, and Layout Dashboard / Sign Out buttons for team members).
+- **Authentication**: Added a login/register card form connected to Supabase Auth.
+- **Team CRM Dashboard**: Displays stats (total inquiries, weekly inquiries, top category), service breakdown charts (using CSS progress bars), and a consultations log table displaying submissions.
+
+### 2. Google Sheets Integration (Calendar CMS)
+- **Dynamic Calendar State**: Added a `calendarItems` state variable in [app/page.js](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/app/page.js) initialized with static defaults.
+- **CSV Fetcher & Parser**:
+  - Implemented a custom client-side CSV parser `parseCSV` in [app/page.js](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/app/page.js) that splits CSV files by rows and columns, handling double quotes and embedded commas correctly.
+  - Implemented `fetchGoogleSheetCalendar` to fetch a published Google Sheet CSV URL from `process.env.NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL`.
+  - Added error-handling with automatic fallback to local offline calendar entries if the network is down or the URL is invalid.
+- **Mounted Fetching Hook**: Hooked the fetch function to the root `useEffect` on mount.
+
+---
+
+## Verification & Configuration Guidelines
+
+### 1. Setup Your Google Sheet Calendar
+1. Create a new Google Sheet.
+2. Set up headers in Row 1:
+   - `date` (e.g., `05`, `11`, `15`)
+   - `form` (e.g., `GSTR-3B`, `GSTR-1`)
+   - `desc` (e.g., `GST monthly return for April supplies`)
+   - `cat` (must be one of: `gst`, `it`, `tds`, `mca`, `pf`)
+   - `catLabel` (e.g., `GST`, `Income Tax`, `TDS`, `MCA`, `PF/ESI`)
+3. Add some deadlines in the subsequent rows.
+4. Click **File** -> **Share** -> **Publish to web** -> Select your sheet -> Select **Comma-separated values (.csv)** -> Click **Publish**.
+5. Copy the generated CSV link and paste it into your [.env.local](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/.env.local) file:
+   ```env
+   NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL="YOUR_PUBLISHED_CSV_LINK_HERE"
+   ```
+
+### 2. Run Locally
+- Start the dev server in your command prompt:
+  ```cmd
+  cmd /c "set PATH=C:\Program Files\nodejs;%PATH% && npm run dev"
+  ```
+- Open `http://localhost:3000/#calendar` and verify that the compliance dates match your Google Sheet spreadsheet!
+- Make a change in the sheet, wait 2–5 minutes (Google Sheet's default refresh rate), reload, and check the calendar update.
+</file>
+
+<file path="implementation_plan.md">
+# Implementation Plan: Full Google Sheets CMS Integration
+
+This plan details how to connect the remaining static modules of the FinEzy application (GST Rate Finder, Checklists, and Due Date Tracker) to separate tabs of your Google Sheet. If you edit any sheet tab, the corresponding website window will update in real-time.
+
+---
+
+## Google Sheet Structure
+
+You will configure **4 separate tabs** inside your single Google Sheet document:
+
+### Tab 1: Calendar (`Sheet1`)
+Used for the compliance deadlines.
+- **Headers**: `date`, `form`, `desc`, `cat`, `catLabel`
+- **Fallback**: Local `calData` array.
+
+### Tab 2: GST Finder (`Sheet2`)
+Used for the HSN lookup database.
+- **Headers**: `hsn`, `desc`, `rate`, `cat`
+- **Fallback**: Local `gstItems` array.
+
+### Tab 3: Checklists (`Sheet3`)
+Used for document requirements lists. Since checklists contain multiple items, group them by sharing the same `title` and `icon` on multiple rows.
+- **Headers**: `title`, `icon`, `item`
+- **Fallback**: Local `checklists` array.
+
+### Tab 4: Tracker (`Sheet4`)
+Used for the due dates countdown grid.
+- **Headers**: `title`, `form`, `dueDate` (Date format: `YYYY-MM-DD` or standard date string)
+- **Fallback**: Local `trackerItems` array.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Step 1: Publish Each Tab to Web as CSV**
+> In your Google Sheet, click **File** -> **Share** -> **Publish to web**.
+> 1. Select the specific tab name (e.g. `GST`) in the dropdown.
+> 2. Select **Comma-separated values (.csv)** in the next dropdown.
+> 3. Click **Publish** and copy the generated link.
+> 4. Repeat this step for each of the 4 tabs to get 4 unique CSV URLs.
+> 
+> **Step 2: Update Your Environment Variables**
+> Open your [.env.local](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/.env.local) file and append the variables:
+> ```env
+> NEXT_PUBLIC_GOOGLE_SHEET_CALENDAR_URL="PASTE_CALENDAR_CSV_URL"
+> NEXT_PUBLIC_GOOGLE_SHEET_GST_URL="PASTE_GST_CSV_URL"
+> NEXT_PUBLIC_GOOGLE_SHEET_CHECKLIST_URL="PASTE_CHECKLIST_CSV_URL"
+> NEXT_PUBLIC_GOOGLE_SHEET_TRACKER_URL="PASTE_TRACKER_CSV_URL"
+> ```
+
+---
+
+## Proposed Changes
+
+### [MODIFY] [page.js](file:///c:/Coading%20-%20Seperate%20folder/Landing%20page/landing-page/app/page.js)
+- Update state variables inside `Page()`:
+  - `gstListItems`: Initialized with `gstItems` fallback.
+  - `checklistItems`: Initialized with `checklists` fallback.
+  - `trackerDateItems`: Initialized with `trackerItems` fallback.
+- Implement specialized parsers:
+  - `parseGstCSV(text)`: Parses HSN, description, rate (integer), and category.
+  - `parseChecklistCSV(text)`: Groups rows with the same `title` and `icon` into nested arrays under that checklist object.
+  - `parseTrackerCSV(text)`: Parses title, form, and due date strings into JS Date objects.
+- Implement fetching functions:
+  - `fetchGstSheet()`: Queries `NEXT_PUBLIC_GOOGLE_SHEET_GST_URL`.
+  - `fetchChecklistSheet()`: Queries `NEXT_PUBLIC_GOOGLE_SHEET_CHECKLIST_URL`.
+  - `fetchTrackerSheet()`: Queries `NEXT_PUBLIC_GOOGLE_SHEET_TRACKER_URL`.
+- Update `useEffect` on mount to call all 4 fetchers.
+- Update JSX rendering blocks and search filters to consume state items (`gstListItems`, `checklistItems`, `trackerDateItems`).
+
+---
+
+## Verification Plan
+
+### Manual Verification
+- Verify that without configuring the environment variables, the default local fallbacks load and display perfectly.
+- Set up a test Google Sheet with the 4 tabs and configure the variables in `.env.local`.
+- Reload localhost and confirm that editing any values in the sheet updates the respective module (Calendar, GST finder, Checklists, or Tracker) in real-time.
+</file>
+
+<file path="package.json">
+{
+  "name": "finezy-landing-page",
+  "version": "1.0.0",
+  "description": "FinEzy CA Professional Resource Portal",
+  "main": "index.html",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^14.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.378.0",
+    "@supabase/supabase-js": "^2.43.4"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
+</file>
+
+<file path="task.md">
+# Checklist for Full Google Sheets CMS Integration
+
+- `[x]` Add state variables for `gstListItems`, `checklistItems`, and `trackerDateItems` in `app/page.js`
+- `[x]` Implement specialized CSV parsing functions (`parseGstCSV`, `parseChecklistCSV`, `parseTrackerCSV`) in `app/page.js`
+- `[x]` Implement dynamic fetch functions (`fetchGstSheet`, `fetchChecklistSheet`, `fetchTrackerSheet`) in `app/page.js`
+- `[x]` Trigger all 4 sheet fetchers in `useEffect` on mount in `app/page.js`
+- `[x]` Update JSX rendering blocks for GST list, checklists, and tracker in `app/page.js` to reference the dynamic state values
+- `[x]` Verify local execution and fallback functionality
+</file>
+
+<file path="app/page.js">
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { 
+  ShieldCheck, Award, Calendar, ArrowRight, AlarmClock, Calculator, Database, 
+  GraduationCap, CalendarClock, Wallet, Hourglass, ListChecks, SearchCode, 
+  TrendingUp, ChevronRight, Menu, X, ChevronLeft, Percent, Home, ArrowUpRight, 
+  Scissors, Info, MapPin, Phone, Mail, Clock, MessageSquare, Send, CheckCircle2, 
+  AlertTriangle, Check, LogIn, LogOut, LayoutDashboard, User, Lock, RefreshCw, 
+  Briefcase
+} from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+/* SUPABASE CONFIGURATION */
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+let supabase = null;
+if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+/* CONSTANT DATABASES */
+const calData = [
+  { date: '05', form: 'GSTR-3B', desc: 'GST monthly return for April supplies', cat: 'gst', catLabel: 'GST' },
+  { date: '07', form: 'TDS Payment', desc: 'Deposit of TDS/TCS for April filings', cat: 'tds', catLabel: 'TDS' },
+  { date: '10', form: 'GSTR-7', desc: 'TDS return under GST regulations', cat: 'gst', catLabel: 'GST' },
+  { date: '11', form: 'GSTR-1', desc: 'Outward supplies statement (GSTR-1)', cat: 'gst', catLabel: 'GST' },
+  { date: '13', form: 'GSTR-6', desc: 'Input Service Distributor (ISD) return', cat: 'gst', catLabel: 'GST' },
+  { date: '15', form: 'PF/ESI Deposit', desc: 'Provident Fund & ESI payments for April', cat: 'pf', catLabel: 'PF/ESI' },
+  { date: '15', form: 'Form 24G', desc: 'Government office TDS book entry summary', cat: 'tds', catLabel: 'TDS' },
+  { date: '20', form: 'GSTR-5', desc: 'Non-resident foreign taxpayer return filing', cat: 'gst', catLabel: 'GST' },
+  { date: '25', form: 'GST PMT-06', desc: 'Challan payment for QRMP quarterly taxpayers', cat: 'gst', catLabel: 'GST' },
+  { date: '30', form: 'Form 26QB', desc: 'Challan-cum-statement of TDS on property sale', cat: 'tds', catLabel: 'TDS' },
+  { date: '31', form: 'ITR-1 / ITR-4', desc: 'IT Return filing baseline for individuals', cat: 'it', catLabel: 'Income Tax' },
+  { date: '31', form: 'Form 26Q', desc: 'Quarterly TDS return statement for Q4 FY 2025-26', cat: 'tds', catLabel: 'TDS' },
+  { date: '31', form: 'AOC-4', desc: 'Company annual accounts financial filing with MCA', cat: 'mca', catLabel: 'MCA' },
+];
+
+const months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const gstItems = [
+  { hsn: '8471', desc: 'Laptops, personal computers, and computing units', rate: 18, cat: 'Electronics' },
+  { hsn: '8517', desc: 'Mobile phones and telephone transmitters', rate: 12, cat: 'Electronics' },
+  { hsn: '2517', desc: 'Portland cement, aluminous cement, and slag cement', rate: 28, cat: 'Construction' },
+  { hsn: '0402', desc: 'Milk, cream, curd, and fresh dairy products', rate: 0, cat: 'Food & Dairy' },
+  { hsn: '1001', desc: 'Wheat, meslin, rye, and standard wheat flour', rate: 0, cat: 'Agriculture' },
+  { hsn: '2402', desc: 'Cigarettes, cigars, and manufactured tobacco products', rate: 28, cat: 'Tobacco' },
+  { hsn: '8703', desc: 'Passenger motor vehicles and hybrid cars', rate: 28, cat: 'Automobiles' },
+  { hsn: '8704', desc: 'Commercial motor vehicles and goods transports', rate: 18, cat: 'Automobiles' },
+  { hsn: '9983', desc: 'Legal advisory, audit, and tax consulting services', rate: 18, cat: 'Professional Services' },
+  { hsn: '9985', desc: 'IT consulting, database, and software support services', rate: 18, cat: 'Professional Services' },
+  { hsn: '9954', desc: 'Contract construction, civil engineer services', rate: 12, cat: 'Professional Services' },
+  { hsn: '0801', desc: 'Coconuts, cashew nuts, and almond kernels', rate: 5, cat: 'Food & Dairy' },
+  { hsn: '3004', desc: 'Medicines, formulations, and pharmaceutical pills', rate: 12, cat: 'Healthcare' },
+  { hsn: '3005', desc: 'Surgical bandages, adhesive medical tape, and devices', rate: 12, cat: 'Healthcare' },
+  { hsn: '6101', desc: 'Readymade overcoats, jackets, and apparel items', rate: 12, cat: 'Apparel' },
+  { hsn: '6109', desc: 'Cotton knitted T-shirts and undergarments', rate: 5, cat: 'Apparel' },
+  { hsn: '2710', desc: 'Petroleum crude oil, motor spirit, and diesel fuel', rate: 0, cat: 'Fuel' },
+  { hsn: '2711', desc: 'LPG liquefied petroleum gas for households', rate: 5, cat: 'Fuel' },
+  { hsn: '8501', desc: 'Electric generators, dynamos, and solar motors', rate: 18, cat: 'Electronics' },
+  { hsn: '8507', desc: 'Lithium-ion batteries and EV battery accumulator packs', rate: 5, cat: 'Electronics' }
+];
+
+const checklists = [
+  {
+    title: 'Individual ITR-1 Filing',
+    icon: '📄',
+    items: [
+      'Form 16 from all employers for the financial year',
+      'Bank interest certificate & savings ledger statement',
+      'Investment receipts under Section 80C (PPF, LIC, ELSS)',
+      'Home loan interest certificate (Form 12BB)',
+      'Aadhaar card & PAN card linkage confirmation',
+      'Form 26AS & Annual Information Statement (AIS) review'
+    ]
+  },
+  {
+    title: 'GST Registration Process',
+    icon: '🏢',
+    items: [
+      'PAN card copy of the business entity or proprietor',
+      'Aadhaar card of primary partners or proprietor',
+      'Registered office lease agreement or property tax receipt',
+      'Cancelled cheque or bank statement with IFSC code',
+      'Digital Signature Certificate (DSC) / EVC authorization',
+      'NOC from property owner (if rented office premises)'
+    ]
+  },
+  {
+    title: 'Private Limited Setup',
+    icon: '🏛️',
+    items: [
+      'PAN & Aadhaar of all proposed directors',
+      'Proof of identity (Voter ID, Passport, or Driving License)',
+      'Electricity bill or gas utility bill of registered office address',
+      'Draft Memorandum (MOA) and Articles of Association (AOA)',
+      'DSC (Digital Signature Certificate) for directors',
+      'DIR-2 consent form & declaration of non-acceptance of deposits'
+    ]
+  },
+  {
+    title: 'Statutory Corporate Audit',
+    icon: '📋',
+    items: [
+      'Final Trial Balance & general ledger accounts dump',
+      'Bank Reconciliation Statement (BRS) for all bank entries',
+      'Fixed Asset Register (FAR) detailing year depreciation rates',
+      'Form 3CD tax audit particulars compilation draft',
+      'Board meeting minutes approving draft financial statement schedules',
+      'Creditors & Debtors balance confirmation certificates'
+    ]
+  }
+];
+
+const trackerItems = [
+  { title: 'GSTR-3B Return Filing', form: 'GST', dueDate: new Date(2026, 4, 20) },
+  { title: 'TDS Deposit Payment', form: 'TDS', dueDate: new Date(2026, 5, 7) },
+  { title: 'GSTR-1 Outward Supplies', form: 'GST', dueDate: new Date(2026, 4, 11) },
+  { title: 'ITR Filing Deadline', form: 'Income Tax', dueDate: new Date(2026, 6, 31) },
+  { title: 'Advance Tax Instalment Q1', form: 'Income Tax', dueDate: new Date(2026, 5, 15) },
+  { title: 'PF & ESI Monthly Deposit', form: 'PF/ESI', dueDate: new Date(2026, 4, 15) },
+  { title: 'Form 26Q TDS Filing', form: 'TDS', dueDate: new Date(2026, 4, 31) },
+  { title: 'AOC-4 Corporate Filing', form: 'MCA', dueDate: new Date(2026, 4, 31) }
+];
+
+
+export default function Page() {
+  // Navigation & Menu States
+  const [activePage, setActivePage] = useState('home');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState('light');
+
+  // Authentication & Dashboard States
+  const [user, setUser] = useState(null);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+  const [authLoading, setAuthLoading] = useState(false);
+  const [consultations, setConsultations] = useState([]);
+  const [loadingConsultations, setLoadingConsultations] = useState(false);
+
+  // Calendar States
+  const [calMonth, setCalMonth] = useState(4); // May
+  const [calYear, setCalYear] = useState(2026);
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [calendarItems, setCalendarItems] = useState(calData);
+  const [gstListItems, setGstListItems] = useState(gstItems);
+  const [checklistItems, setChecklistItems] = useState(checklists);
+  const [trackerDateItems, setTrackerDateItems] = useState(trackerItems);
+
+  // Calculators Selection
+  const [calcTab, setCalcTab] = useState('it');
+
+  // Income Tax States
+  const [itIncome, setItIncome] = useState(1200000);
+  const [itStd, setItStd] = useState(75000);
+  const [itRegime, setItRegime] = useState('new');
+  const [it80c, setIt80c] = useState(150000);
+  const [it80d, setIt80d] = useState(25000);
+
+  // HRA States
+  const [hraBasic, setHraBasic] = useState(600000);
+  const [hraRecv, setHraRecv] = useState(240000);
+  const [hraRent, setHraRent] = useState(180000);
+  const [hraCity, setHraCity] = useState('metro');
+
+  // Advance Tax States
+  const [advIncome, setAdvIncome] = useState(2000000);
+  const [advTds, setAdvTds] = useState(100000);
+  const [advPaid, setAdvPaid] = useState(0);
+
+  // TDS States
+  const [tdsAmt, setTdsAmt] = useState(500000);
+  const [tdsNature, setTdsNature] = useState('10'); // Professional Fees (10%)
+  const [tdsPan, setTdsPan] = useState('1'); // Has PAN
+
+  // GST Search
+  const [gstInput, setGstInput] = useState('');
+
+  // Checklist states
+  const [checklistState, setChecklistState] = useState({});
+
+  // Toast Alerts
+  const [toasts, setToasts] = useState([]);
+
+  // Form submission loading
+  const [savingForm, setSavingForm] = useState(false);
+
+
+  /* INITIALIZATION */
+  useEffect(() => {
+    // Sync URL hash router on mount
+    const hash = window.location.hash.replace('#', '');
+    const validPages = ['home', 'calendar', 'calculator', 'tracker', 'checklist', 'gst', 'budget', 'contact', 'login', 'dashboard'];
+    if (hash && validPages.includes(hash)) {
+      setActivePage(hash);
+    }
+
+    // Bind hash change listener
+    const handleHashChange = () => {
+      const newHash = window.location.hash.replace('#', '');
+      if (newHash && validPages.includes(newHash)) {
+        setActivePage(newHash);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+
+    // Sync Theme from localStorage
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    setTheme(initialTheme);
+    document.documentElement.setAttribute('data-theme', initialTheme);
+
+    // Fetch Google Sheet modules if configured
+    fetchGoogleSheetCalendar();
+    fetchGstSheet();
+    fetchChecklistSheet();
+    fetchTrackerSheet();
+
+    // Auth Session Sync
+    if (supabase) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchConsultationsData();
+        }
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchConsultationsData();
+        } else {
+          setConsultations([]);
+        }
+      });
+
+      return () => {
+        window.removeEventListener('hashchange', handleHashChange);
+        subscription.unsubscribe();
+      };
+    }
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  // Sync checklist checked status reactively from LocalStorage
+  useEffect(() => {
+    const loadedProgress = {};
+    checklistItems.forEach((_, ci) => {
+      const listId = `checklist-${ci}`;
+      loadedProgress[ci] = JSON.parse(localStorage.getItem(listId)) || {};
+    });
+    setChecklistState(loadedProgress);
+  }, [checklistItems]);
+
+
+  /* HANDLERS */
+  const parseGstCSV = (text) => {
+    if (!text) return [];
+    const lines = text.split(/\r?\n/);
+    if (lines.length < 2) return [];
+
+    const headers = [];
+    const headerLine = lines[0];
+    const headerMatches = headerLine.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || headerLine.split(',');
+    headerMatches.forEach(h => {
+      headers.push(h.trim().replace(/^["']|["']$/g, ''));
+    });
+
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const row = [];
+      let insideQuote = false;
+      let entry = '';
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        if (char === '"') {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          row.push(entry.trim().replace(/^["']|["']$/g, ''));
+          entry = '';
+        } else {
+          entry += char;
+        }
+      }
+      row.push(entry.trim().replace(/^["']|["']$/g, ''));
+
+      const item = {};
+      headers.forEach((header, index) => {
+        item[header] = row[index] || '';
+      });
+
+      if (item.hsn && item.desc && item.rate) {
+        result.push({
+          hsn: String(item.hsn),
+          desc: item.desc,
+          rate: parseInt(item.rate, 10) || 0,
+          cat: item.cat || 'General'
+        });
+      }
+    }
+    return result;
+  };
+
+  const parseChecklistCSV = (text) => {
+    if (!text) return [];
+    const lines = text.split(/\r?\n/);
+    if (lines.length < 2) return [];
+
+    const headers = [];
+    const headerLine = lines[0];
+    const headerMatches = headerLine.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || headerLine.split(',');
+    headerMatches.forEach(h => {
+      headers.push(h.trim().replace(/^["']|["']$/g, ''));
+    });
+
+    const groups = {};
+    const orderedKeys = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const row = [];
+      let insideQuote = false;
+      let entry = '';
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        if (char === '"') {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          row.push(entry.trim().replace(/^["']|["']$/g, ''));
+          entry = '';
+        } else {
+          entry += char;
+        }
+      }
+      row.push(entry.trim().replace(/^["']|["']$/g, ''));
+
+      const item = {};
+      headers.forEach((header, index) => {
+        item[header] = row[index] || '';
+      });
+
+      if (item.title && item.item) {
+        if (!groups[item.title]) {
+          groups[item.title] = {
+            title: item.title,
+            icon: item.icon || '📄',
+            items: []
+          };
+          orderedKeys.push(item.title);
+        }
+        groups[item.title].items.push(item.item);
+      }
+    }
+
+    return orderedKeys.map(k => groups[k]);
+  };
+
+  const parseTrackerCSV = (text) => {
+    if (!text) return [];
+    const lines = text.split(/\r?\n/);
+    if (lines.length < 2) return [];
+
+    const headers = [];
+    const headerLine = lines[0];
+    const headerMatches = headerLine.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || headerLine.split(',');
+    headerMatches.forEach(h => {
+      headers.push(h.trim().replace(/^["']|["']$/g, ''));
+    });
+
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const row = [];
+      let insideQuote = false;
+      let entry = '';
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        if (char === '"') {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          row.push(entry.trim().replace(/^["']|["']$/g, ''));
+          entry = '';
+        } else {
+          entry += char;
+        }
+      }
+      row.push(entry.trim().replace(/^["']|["']$/g, ''));
+
+      const item = {};
+      headers.forEach((header, index) => {
+        item[header] = row[index] || '';
+      });
+
+      if (item.title && item.dueDate) {
+        const parsedDate = new Date(item.dueDate);
+        if (!isNaN(parsedDate.getTime())) {
+          result.push({
+            title: item.title,
+            form: item.form || 'General',
+            dueDate: parsedDate
+          });
+        }
+      }
+    }
+    return result;
+  };
+
+  const fetchGstSheet = async () => {
+    const url = process.env.NEXT_PUBLIC_GOOGLE_SHEET_GST_URL;
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      const text = await res.text();
+      const data = parseGstCSV(text);
+      if (data && data.length > 0) setGstListItems(data);
+    } catch (err) {
+      console.error('Error fetching GST sheet:', err);
+    }
+  };
+
+  const fetchChecklistSheet = async () => {
+    const url = process.env.NEXT_PUBLIC_GOOGLE_SHEET_CHECKLIST_URL;
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      const text = await res.text();
+      const data = parseChecklistCSV(text);
+      if (data && data.length > 0) setChecklistItems(data);
+    } catch (err) {
+      console.error('Error fetching Checklist sheet:', err);
+    }
+  };
+
+  const fetchTrackerSheet = async () => {
+    const url = process.env.NEXT_PUBLIC_GOOGLE_SHEET_TRACKER_URL;
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      const text = await res.text();
+      const data = parseTrackerCSV(text);
+      if (data && data.length > 0) setTrackerDateItems(data);
+    } catch (err) {
+      console.error('Error fetching Tracker sheet:', err);
+    }
+  };
+
+  const parseCSV = (text) => {
+    if (!text) return [];
+    const lines = text.split(/\r?\n/);
+    if (lines.length < 2) return [];
+
+    const headers = [];
+    const headerLine = lines[0];
+    const headerMatches = headerLine.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || headerLine.split(',');
+    headerMatches.forEach(h => {
+      headers.push(h.trim().replace(/^["']|["']$/g, ''));
+    });
+
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const row = [];
+      let insideQuote = false;
+      let entry = '';
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        if (char === '"') {
+          insideQuote = !insideQuote;
+        } else if (char === ',' && !insideQuote) {
+          row.push(entry.trim().replace(/^["']|["']$/g, ''));
+          entry = '';
+        } else {
+          entry += char;
+        }
+      }
+      row.push(entry.trim().replace(/^["']|["']$/g, ''));
+
+      const item = {};
+      headers.forEach((header, index) => {
+        item[header] = row[index] || '';
+      });
+
+      if (item.date && item.form && item.desc) {
+        result.push({
+          date: String(item.date).padStart(2, '0'),
+          form: item.form,
+          desc: item.desc,
+          cat: item.cat || 'gst',
+          catLabel: item.catLabel || item.cat?.toUpperCase() || 'GST'
+        });
+      }
+    }
+    return result;
+  };
+
+  const fetchGoogleSheetCalendar = async () => {
+    const sheetCsvUrl = process.env.NEXT_PUBLIC_GOOGLE_SHEET_CSV_URL;
+    if (!sheetCsvUrl) return;
+
+    try {
+      const res = await fetch(sheetCsvUrl);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const text = await res.text();
+      const parsedData = parseCSV(text);
+      if (parsedData && parsedData.length > 0) {
+        setCalendarItems(parsedData);
+      }
+    } catch (err) {
+      console.error('Error fetching calendar from Google Sheets:', err);
+      showToast(
+        'Google Sheet Sync Error',
+        'Could not load live calendar data. Falling back to local data.',
+        'error'
+      );
+    }
+  };
+
+  const fetchConsultationsData = async () => {
+    if (!supabase) return;
+    setLoadingConsultations(true);
+    try {
+      const { data, error } = await supabase
+        .from('consultations')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setConsultations(data || []);
+    } catch (err) {
+      console.error('Error fetching consultations:', err);
+    } finally {
+      setLoadingConsultations(false);
+    }
+  };
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    if (!supabase) {
+      showToast('Configuration Required', 'Supabase URL and Anon Key are missing.', 'error');
+      return;
+    }
+    if (!authEmail || !authPassword) {
+      showToast('Validation Error', 'Email and Password are required.', 'error');
+      return;
+    }
+    
+    setAuthLoading(true);
+    try {
+      if (authMode === 'login') {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+        showToast('Welcome Back!', `Logged in successfully as ${data.user.email}`, 'success');
+        handlePageChange('dashboard');
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+        if (data.session) {
+          showToast('Account Created!', `Logged in successfully as ${data.user.email}`, 'success');
+          handlePageChange('dashboard');
+        } else {
+          showToast('Verification Sent!', 'Please check your email inbox to confirm registration.', 'info');
+        }
+      }
+      setAuthPassword('');
+    } catch (err) {
+      console.error('Authentication error:', err);
+      showToast('Authentication Failed', err.message, 'error');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    if (!supabase) return;
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      showToast('Logged Out', 'You have been signed out successfully.', 'info');
+      handlePageChange('home');
+    } catch (err) {
+      console.error('Sign out error:', err);
+      showToast('Error', 'Failed to sign out: ' + err.message, 'error');
+    }
+  };
+
+  const handlePageChange = (pageId) => {
+    setActivePage(pageId);
+    window.location.hash = pageId;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleToggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('theme', nextTheme);
+  };
+
+  const handleToggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const showToast = (title, message, type = 'info') => {
+    const toastId = Date.now();
+    setToasts(prev => [...prev, { id: toastId, title, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== toastId));
+    }, 5000);
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+  const handleToggleCheckItem = (ci, ii) => {
+    const listId = `checklist-${ci}`;
+    const currentListState = { ...checklistState[ci] };
+    
+    currentListState[ii] = !currentListState[ii];
+    localStorage.setItem(listId, JSON.stringify(currentListState));
+
+    setChecklistState(prev => ({
+      ...prev,
+      [ci]: currentListState
+    }));
+  };
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    const name = e.target.elements['contact-name'].value;
+    const email = e.target.elements['contact-email'].value;
+    const phone = e.target.elements['contact-phone'].value;
+    const service = e.target.elements['contact-service'].value;
+    const message = e.target.elements['contact-msg'].value;
+
+    if (supabase) {
+      setSavingForm(true);
+      try {
+        const { error } = await supabase
+          .from('consultations')
+          .insert([
+            {
+              name,
+              email,
+              phone,
+              service,
+              message,
+              created_at: new Date()
+            }
+          ]);
+
+        if (error) throw error;
+
+        showToast(
+          'Consultation Saved!',
+          `Thank you, ${name}. Your request regarding "${service}" has been recorded.`,
+          'success'
+        );
+        e.target.reset();
+
+      } catch (err) {
+        console.error('Supabase database error:', err);
+        showToast(
+          'Database Error',
+          'Failed to record consultation: ' + err.message,
+          'error'
+        );
+      } finally {
+        setSavingForm(false);
+      }
+    } else {
+      // Demo Fallback
+      showToast(
+        'Consultation Booked (Demo)!',
+        `Thank you, ${name}. Supabase is not configured yet, so this submission runs in demo mode.`,
+        'success'
+      );
+      e.target.reset();
+    }
+  };
+
+
+  /* CORE CALCULATIONS (REACTIVE DEFINITIONS) */
+
+  // Currency utility formatter
+  const formatCurrency = (val) => {
+    return '₹' + Math.round(val).toLocaleString('en-IN');
+  };
+
+  // Calendar rows relative dates math
+  const todayDate = new Date(2026, 4, 30); // May 30, 2026
+  const calendarRows = calendarItems.filter(r => activeFilter === 'all' || r.cat === activeFilter);
+  const calendarCatColors = { gst: 'tag-gst', it: 'tag-it', tds: 'tag-it', mca: 'tag-mca', pf: 'tag-mca' };
+
+  // Income Tax Computations
+  const itDeduction = itRegime === 'new' ? itStd : (itStd + Math.min(150000, it80c) + it80d);
+  const itTaxable = Math.max(0, itIncome - itDeduction);
+  
+  let itBasicTax = 0;
+  if (itRegime === 'new') {
+    // Slabs: Up to 3L: Nil, 3-7L: 5%, 7-10L: 10%, 10-12L: 15%, 12-15L: 20%, Above 15L: 30%
+    const slabs = [
+      { limit: 300000, rate: 0.00 },
+      { limit: 400000, rate: 0.05 },
+      { limit: 300000, rate: 0.10 },
+      { limit: 200000, rate: 0.15 },
+      { limit: 300000, rate: 0.20 },
+      { limit: Infinity, rate: 0.30 }
+    ];
+    let remaining = itTaxable;
+    for (const s of slabs) {
+      const slice = Math.min(remaining, s.limit);
+      itBasicTax += slice * s.rate;
+      remaining -= slice;
+      if (remaining <= 0) break;
+    }
+    // Rebate u/s 87A: Income up to 12 Lakhs is completely tax-free
+    if (itTaxable <= 1200000) {
+      itBasicTax = 0;
+    }
+  } else {
+    // Slabs: Up to 2.5L: Nil, 2.5-5L: 5%, 5-10L: 20%, Above 10L: 30%
+    const slabs = [
+      { limit: 250000, rate: 0.00 },
+      { limit: 250000, rate: 0.05 },
+      { limit: 500000, rate: 0.20 },
+      { limit: Infinity, rate: 0.30 }
+    ];
+    let remaining = itTaxable;
+    for (const s of slabs) {
+      const slice = Math.min(remaining, s.limit);
+      itBasicTax += slice * s.rate;
+      remaining -= slice;
+      if (remaining <= 0) break;
+    }
+    // Rebate u/s 87A: Taxable income up to 5 Lakhs is exempt
+    if (itTaxable <= 500000) {
+      itBasicTax = Math.min(itBasicTax, 12500);
+      if (itTaxable <= 500000) itBasicTax = 0;
+    }
+  }
+  const itCess = itBasicTax * 0.04;
+  const itTotalTax = itBasicTax + itCess;
+  const itEffRate = itIncome > 0 ? ((itTotalTax / itIncome) * 100).toFixed(2) + '%' : '0.00%';
+
+  // stacked visual progress percentages
+  const itDedPct = itIncome > 0 ? (itDeduction / itIncome) * 100 : 0;
+  const itLiabPct = itIncome > 0 ? (itTotalTax / itIncome) * 100 : 0;
+  const itTaxablePct = itIncome > 0 ? Math.max(0, 100 - itDedPct - itLiabPct) : 100;
+
+  // HRA Computations
+  const hraExcess = Math.max(0, hraRent - (hraBasic * 0.1));
+  const hraPctAmt = hraBasic * (hraCity === 'metro' ? 0.5 : 0.4);
+  const hraExempt = Math.min(hraRecv, hraExcess, hraPctAmt);
+  const hraTaxable = Math.max(0, hraRecv - hraExempt);
+
+  // Advance Tax Computations
+  const advDeduction = 75000;
+  const advTaxable = Math.max(0, advIncome - advDeduction);
+  let advBasicTax = 0;
+  const advSlabs = [
+    { limit: 300000, rate: 0.00 },
+    { limit: 400000, rate: 0.05 },
+    { limit: 300000, rate: 0.10 },
+    { limit: 200000, rate: 0.15 },
+    { limit: 300000, rate: 0.20 },
+    { limit: Infinity, rate: 0.30 }
+  ];
+  let advRemaining = advTaxable;
+  for (const s of advSlabs) {
+    const slice = Math.min(advRemaining, s.limit);
+    advBasicTax += slice * s.rate;
+    advRemaining -= slice;
+    if (advRemaining <= 0) break;
+  }
+  if (advTaxable <= 1200000) {
+    advBasicTax = 0;
+  }
+  const advCess = advBasicTax * 0.04;
+  const advTotalTax = advBasicTax + advCess;
+  const advDueBalance = Math.max(0, advTotalTax - advTds - advPaid);
+
+  // TDS Computations
+  const tdsRates = { '0': 0, '1': 0.01, '10': 0.10, '10b': 0.10, '5': 0.05 };
+  let tdsBaseRate = tdsRates[tdsNature] || 0.10;
+  if (tdsPan === '2') {
+    tdsBaseRate = Math.max(tdsBaseRate * 2, 0.20);
+  }
+  const tdsDeducted = tdsAmt * tdsBaseRate;
+  const tdsNetPayable = Math.max(0, tdsAmt - tdsDeducted);
+
+  // GST rates filter
+  const filteredGstList = gstInput
+    ? gstListItems.filter(g => 
+        g.desc.toLowerCase().includes(gstInput.toLowerCase().trim()) || 
+        g.hsn.includes(gstInput.trim()) || 
+        g.cat.toLowerCase().includes(gstInput.toLowerCase().trim())
+      )
+    : gstListItems;
+
+  const gstRateColors = { 0: 'r0', 5: 'r5', 12: 'r12', 18: 'r18', 28: 'r28' };
+
+
+  return (
+    <>
+      {/* HEADER / NAVIGATION */}
+      <nav className="glass-nav">
+        <div className="nav-container">
+          <a href="#" className="logo" onClick={(e) => { e.preventDefault(); handlePageChange('home'); }}>
+            <span className="logo-icon"><ShieldCheck /></span>
+            <span>Fin<span className="brand-highlight">Ezy</span></span>
+          </a>
+          
+          {/* Desktop Navigation */}
+          <div className="nav-links">
+            <button className={`nav-btn ${activePage === 'home' ? 'active' : ''}`} onClick={() => handlePageChange('home')}>Home</button>
+            <button className={`nav-btn ${activePage === 'calendar' ? 'active' : ''}`} onClick={() => handlePageChange('calendar')}>Calendar</button>
+            <button className={`nav-btn ${activePage === 'calculator' ? 'active' : ''}`} onClick={() => handlePageChange('calculator')}>Calculators</button>
+            <button className={`nav-btn ${activePage === 'tracker' ? 'active' : ''}`} onClick={() => handlePageChange('tracker')}>Tracker</button>
+            <button className={`nav-btn ${activePage === 'checklist' ? 'active' : ''}`} onClick={() => handlePageChange('checklist')}>Checklists</button>
+            <button className={`nav-btn ${activePage === 'gst' ? 'active' : ''}`} onClick={() => handlePageChange('gst')}>GST Finder</button>
+            <button className={`nav-btn ${activePage === 'budget' ? 'active' : ''}`} onClick={() => handlePageChange('budget')}>Budget 2025</button>
+            <button className={`nav-btn ${activePage === 'contact' ? 'active' : ''}`} onClick={() => handlePageChange('contact')}>Contact</button>
+            {user && (
+              <button className={`nav-btn ${activePage === 'dashboard' ? 'active' : ''}`} onClick={() => handlePageChange('dashboard')}>
+                <LayoutDashboard size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                Dashboard
+              </button>
+            )}
+          </div>
+
+          <div className="nav-actions">
+            {/* Theme Toggle */}
+            <button className="icon-btn-toggle" onClick={handleToggleTheme} title="Toggle Theme">
+              <span className="flex-center-y">
+                {theme === 'dark' ? <i data-lucide="sun"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></i> : <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>}
+              </span>
+            </button>
+            
+            {user ? (
+              <button className="nav-cta btn-signout" onClick={handleSignOut} style={{ backgroundColor: 'var(--danger)', boxShadow: '0 4px 10px rgba(239, 68, 68, 0.2)' }}>
+                <LogOut size={16} />
+                <span>Sign Out</span>
+              </button>
+            ) : (
+              <>
+                <button className="nav-btn login-nav-btn" onClick={() => handlePageChange('login')}>
+                  <LogIn size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                  Member Login
+                </button>
+                <button className="nav-cta" onClick={() => handlePageChange('contact')}>
+                  <CalendarClock />
+                  <span>Consultation</span>
+                </button>
+              </>
+            )}
+
+            {/* Mobile Menu Toggle */}
+            <button className="mobile-toggle" onClick={handleToggleMobileMenu}>
+              {mobileMenuOpen ? <X /> : <Menu />}
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* MOBILE NAVIGATION DROPDOWN */}
+      <div className={`mobile-nav-overlay ${mobileMenuOpen ? 'active' : ''}`}>
+        <div className="mobile-menu-links">
+          <button className={`mobile-nav-btn ${activePage === 'home' ? 'active' : ''}`} onClick={() => { handlePageChange('home'); handleToggleMobileMenu(); }}>Home</button>
+          <button className={`mobile-nav-btn ${activePage === 'calendar' ? 'active' : ''}`} onClick={() => { handlePageChange('calendar'); handleToggleMobileMenu(); }}>Compliance Calendar</button>
+          <button className={`mobile-nav-btn ${activePage === 'calculator' ? 'active' : ''}`} onClick={() => { handlePageChange('calculator'); handleToggleMobileMenu(); }}>Tax Calculators</button>
+          <button className={`mobile-nav-btn ${activePage === 'tracker' ? 'active' : ''}`} onClick={() => { handlePageChange('tracker'); handleToggleMobileMenu(); }}>Due Date Tracker</button>
+          <button className={`mobile-nav-btn ${activePage === 'checklist' ? 'active' : ''}`} onClick={() => { handlePageChange('checklist'); handleToggleMobileMenu(); }}>Document Checklist</button>
+          <button className={`mobile-nav-btn ${activePage === 'gst' ? 'active' : ''}`} onClick={() => { handlePageChange('gst'); handleToggleMobileMenu(); }}>GST Rate Finder</button>
+          <button className={`mobile-nav-btn ${activePage === 'budget' ? 'active' : ''}`} onClick={() => { handlePageChange('budget'); handleToggleMobileMenu(); }}>Union Budget 2025</button>
+          <button className={`mobile-nav-btn ${activePage === 'contact' ? 'active' : ''}`} onClick={() => { handlePageChange('contact'); handleToggleMobileMenu(); }}>Contact Us</button>
+          {user ? (
+            <>
+              <button className={`mobile-nav-btn ${activePage === 'dashboard' ? 'active' : ''}`} onClick={() => { handlePageChange('dashboard'); handleToggleMobileMenu(); }}>Team Dashboard</button>
+              <button className="mobile-nav-cta" onClick={() => { handleSignOut(); handleToggleMobileMenu(); }} style={{ backgroundColor: 'var(--danger)' }}>Sign Out</button>
+            </>
+          ) : (
+            <>
+              <button className={`mobile-nav-btn ${activePage === 'login' ? 'active' : ''}`} onClick={() => { handlePageChange('login'); handleToggleMobileMenu(); }}>Member Login</button>
+              <button className="mobile-nav-cta" onClick={() => { handlePageChange('contact'); handleToggleMobileMenu(); }}>Book Consultation</button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <main className="main-container">
+        
+        {/* PAGE 1: HOME */}
+        <section className={`page ${activePage === 'home' ? 'active' : ''}`}>
+          <div className="hero-section">
+            <div className="hero-bg-shapes">
+              <div className="shape shape-1"></div>
+              <div className="shape shape-2"></div>
+            </div>
+            <div className="hero-content">
+              <div className="hero-badge">
+                <span className="badge-icon"><Award /></span>
+                <span>Trusted by 500+ CA Professionals &amp; Finance Students</span>
+              </div>
+              <h1>Your Intelligent Portal for <span className="gradient-text">Finance &amp; Compliance</span></h1>
+              <p>An elegant, unified dashboard packed with real-time tax calculators, compliance tracking, checklist builders, and union budget resources designed to save hours of manual calculation.</p>
+              <div className="hero-actions">
+                <button className="btn-primary" onClick={() => handlePageChange('calendar')}>
+                  <Calendar />
+                  <span>View Deadlines</span>
+                </button>
+                <button className="btn-secondary" onClick={() => handlePageChange('calculator')}>
+                  <span>Try Tax Calculator</span>
+                  <ArrowRight />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon"><AlarmClock /></div>
+              <div className="stat-info">
+                <span className="stat-number">50+</span>
+                <span className="stat-desc">Deadlines Tracked</span>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon"><Calculator /></div>
+              <div className="stat-info">
+                <span className="stat-number">4</span>
+                <span className="stat-desc">Core Tax Calculators</span>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon"><Database /></div>
+              <div className="stat-info">
+                <span className="stat-number">20+</span>
+                <span className="stat-desc">GST Code Library</span>
+              </div>
+            </div>
+            <div className="stat-card flex-center-y">
+              <div className="stat-icon highlight"><GraduationCap /></div>
+              <div className="stat-info">
+                <span className="stat-number">Free</span>
+                <span className="stat-desc">Always Free for Students</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="section-container">
+            <div className="section-header text-center">
+              <span className="section-badge">Platform Modules</span>
+              <h2>Everything a Financial Professional Needs</h2>
+              <p className="section-subtitle">Jump straight to any tool to simplify your regulatory compliance workflow.</p>
+            </div>
+
+            <div className="features-grid">
+              <div className="feature-card" onClick={() => handlePageChange('calendar')}>
+                <div className="feat-icon"><CalendarClock /></div>
+                <h3>Compliance Calendar</h3>
+                <p>GST, Income Tax, MCA, and PF/ESI filing due dates updated for 2026.</p>
+                <div className="feat-footer">
+                  <span className="feat-tag">Updated Monthly</span>
+                  <span className="feat-link">Open <ChevronRight /></span>
+                </div>
+              </div>
+
+              <div className="feature-card" onClick={() => handlePageChange('calculator')}>
+                <div className="feat-icon"><Wallet /></div>
+                <h3>Tax Calculators</h3>
+                <p>Compute Income Tax under old/new regimes, HRA, Advance Tax, and TDS instantly.</p>
+                <div className="feat-footer">
+                  <span className="feat-tag">FY 2025-26</span>
+                  <span class="feat-link">Open <ChevronRight /></span>
+                </div>
+              </div>
+
+              <div className="feature-card" onClick={() => handlePageChange('tracker')}>
+                <div className="feat-icon"><Hourglass /></div>
+                <h3>Due Date Tracker</h3>
+                <p>A visual countdown timer alerting you of overdue or impending return dates.</p>
+                <div className="feat-footer">
+                  <span className="feat-tag">Live countdown</span>
+                  <span className="feat-link">Open <ChevronRight /></span>
+                </div>
+              </div>
+
+              <div className="feature-card" onClick={() => handlePageChange('checklist')}>
+                <div className="feat-icon"><ListChecks /></div>
+                <h3>Filing Checklists</h3>
+                <p>Interactive documents compilation lists for audits, GST, and ITR incorporation.</p>
+                <div className="feat-footer">
+                  <span className="feat-tag">Auto-saves state</span>
+                  <span className="feat-link">Open <ChevronRight /></span>
+                </div>
+              </div>
+
+              <div className="feature-card" onClick={() => handlePageChange('gst')}>
+                <div className="feat-icon"><SearchCode /></div>
+                <h3>GST Rate Finder</h3>
+                <p>Instantly search rates and identify matching HSN/SAC codes for services &amp; goods.</p>
+                <div className="feat-footer">
+                  <span className="feat-tag">Instant Lookup</span>
+                  <span className="feat-link">Open <ChevronRight /></span>
+                </div>
+              </div>
+
+              <div className="feature-card" onClick={() => handlePageChange('budget')}>
+                <div className="feat-icon"><TrendingUp /></div>
+                <h3>Union Budget 2025</h3>
+                <p>Quick reference guide outlining direct tax reforms, slabs, and capital gain changes.</p>
+                <div className="feat-footer">
+                  <span className="feat-tag">Finance Act</span>
+                  <span className="feat-link">Open <ChevronRight /></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="section-container bg-surface-alt rounded-lg border">
+            <div className="section-header">
+              <span className="section-badge">Live Feed</span>
+              <h2>Tax &amp; Regulatory Alert Board</h2>
+              <p className="section-subtitle">Stay informed on extensions, notifications, and directives from tax authorities.</p>
+            </div>
+
+            <div className="updates-grid">
+              <div className="update-card">
+                <div className="update-header">
+                  <span className="update-date"><Calendar /> May 20, 2026</span>
+                  <span className="category-tag tag-gst">GST Notification</span>
+                </div>
+                <h3>GSTR-3B filing timeline extended to May 22 for April 2026 returns due to technical glitches on the GSTN portal.</h3>
+              </div>
+
+              <div className="update-card">
+                <div className="update-header">
+                  <span className="update-date"><Calendar /> May 15, 2026</span>
+                  <span className="category-tag tag-it">Income Tax</span>
+                </div>
+                <h3>Quarterly TDS Statements (Form 24Q &amp; 26Q) for Q4 FY 2025-26 must be filed on or before May 31, 2026 to avoid late fees.</h3>
+              </div>
+
+              <div className="update-card">
+                <div className="update-header">
+                  <span className="update-date"><Calendar /> May 10, 2026</span>
+                  <span className="category-tag tag-mca">MCA</span>
+                </div>
+                <h3>Ministry of Corporate Affairs extends AGM filing timeline for companies registering in FY 2025-26 under new digital system.</h3>
+              </div>
+
+              <div className="update-card">
+                <div className="update-header">
+                  <span className="update-date"><Calendar /> May 05, 2026</span>
+                  <span className="category-tag tag-sebi">SEBI Circular</span>
+                </div>
+                <h3>SEBI issues refined periodic reporting schedules for listed firms, enhancing ESG transparency starting June 1.</h3>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PAGE 2: COMPLIANCE CALENDAR */}
+        <section className={`page ${activePage === 'calendar' ? 'active' : ''}`}>
+          <div className="section-container">
+            <div className="section-header">
+              <span className="section-badge">Filing Schedule</span>
+              <h1>Compliance Calendar</h1>
+              <p className="section-subtitle">Track important compliance deadlines. Toggle filters to isolate categories.</p>
+            </div>
+
+            <div className="calendar-panel">
+              <div className="cal-controls">
+                <div className="month-selector">
+                  <button className="control-btn" onClick={() => setCalMonth(prev => (prev - 1 < 0 ? 11 : prev - 1))} aria-label="Previous Month"><ChevronLeft /></button>
+                  <h2 className="current-month-lbl">{months[calMonth]} {calYear}</h2>
+                  <button className="control-btn" onClick={() => setCalMonth(prev => (prev + 1 > 11 ? 0 : prev + 1))} aria-label="Next Month"><ChevronRight /></button>
+                </div>
+                <div className="filter-pills-container">
+                  {['all', 'gst', 'it', 'tds', 'mca', 'pf'].map((f) => (
+                    <button 
+                      key={f} 
+                      className={`filter-pill ${activeFilter === f ? 'active' : ''}`} 
+                      onClick={() => setActiveFilter(f)}
+                    >
+                      {f === 'all' ? 'All' : f === 'it' ? 'Income Tax' : f.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="table-responsive">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Due Date</th>
+                      <th>Compliance &amp; Description</th>
+                      <th>Form / Return Code</th>
+                      <th>Department</th>
+                      <th>Urgency Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {calendarRows.map((r, idx) => {
+                      const due = new Date(calYear, calMonth, parseInt(r.date));
+                      const diff = Math.ceil((due - todayDate) / (1000 * 60 * 60 * 24));
+                      let statusClass = 'safe';
+                      let statusText = '';
+
+                      if (diff < 0) {
+                        statusClass = 'urgent';
+                        statusText = 'Overdue';
+                      } else if (diff === 0) {
+                        statusClass = 'urgent';
+                        statusText = 'Due Today';
+                      } else if (diff <= 3) {
+                        statusClass = 'urgent';
+                        statusText = `${diff} days left`;
+                      } else if (diff <= 10) {
+                        statusClass = 'soon';
+                        statusText = `${diff} days left`;
+                      } else {
+                        statusClass = 'safe';
+                        statusText = `${diff} days left`;
+                      }
+
+                      return (
+                        <tr key={idx}>
+                          <td><strong>{r.date} {months[calMonth].slice(0, 3)}</strong></td>
+                          <td>
+                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.desc}</div>
+                          </td>
+                          <td><span className={`category-tag ${calendarCatColors[r.cat] || 'tag-it'}`}>{r.form}</span></td>
+                          <td><span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{r.catLabel}</span></td>
+                          <td><span className={`status-badge ${statusClass}`}>{statusText}</span></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PAGE 3: TAX CALCULATORS */}
+        <section className={`page ${activePage === 'calculator' ? 'active' : ''}`}>
+          <div className="section-container">
+            <div className="section-header">
+              <span className="section-badge">Interactive Estimators</span>
+              <h1>Tax &amp; Compliance Calculators</h1>
+              <p className="section-subtitle">Toggle tabs to perform dynamic tax, HRA exemption, advance tax liability, and TDS computations.</p>
+            </div>
+
+            <div className="calculator-tabs">
+              <button className={`calc-tab-btn ${calcTab === 'it' ? 'active' : ''}`} onClick={() => setCalcTab('it')}><Percent /> Income Tax</button>
+              <button className={`calc-tab-btn ${calcTab === 'hra' ? 'active' : ''}`} onClick={() => setCalcTab('hra')}><Home /> HRA Exemption</button>
+              <button className={`calc-tab-btn ${calcTab === 'adv' ? 'active' : ''}`} onClick={() => setCalcTab('adv')}><ArrowUpRight /> Advance Tax</button>
+              <button className={`calc-tab-btn ${calcTab === 'tds' ? 'active' : ''}`} onClick={() => setCalcTab('tds')}><Scissors /> TDS Calculator</button>
+            </div>
+
+            {/* Income Tax Calculator */}
+            <div className={`calculator-view ${calcTab === 'it' ? 'active' : ''}`}>
+              <div className="calc-grid">
+                <div className="calc-inputs-pane">
+                  <h3>Financial Details (FY 2025-26)</h3>
+                  <div className="input-group">
+                    <label>Annual Gross Income (&#8377;)</label>
+                    <div className="input-wrapper">
+                      <span className="input-prefix">&#8377;</span>
+                      <input type="number" value={itIncome} onChange={(e) => setItIncome(Math.max(0, +e.target.value))} />
+                    </div>
+                  </div>
+                  
+                  <div className="input-group-row">
+                    <div className="input-group">
+                      <label>Standard Deduction (&#8377;)</label>
+                      <input type="number" value={itStd} onChange={(e) => setItStd(Math.max(0, +e.target.value))} />
+                    </div>
+                    <div className="input-group">
+                      <label>Tax Regime Option</label>
+                      <select value={itRegime} onChange={(e) => setItRegime(e.target.value)}>
+                        <option value="new">New Tax Regime (Default)</option>
+                        <option value="old">Old Tax Regime</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {itRegime === 'old' && (
+                    <div className="deductions-toggle-area">
+                      <div className="input-group">
+                        <label>Section 80C Deductions (PPF, LIC, ELSS) (&#8377;)</label>
+                        <input type="number" value={it80c} onChange={(e) => setIt80c(Math.max(0, +e.target.value))} />
+                        <span className="input-hint">Maximum limit: &#8377;1,50,000</span>
+                      </div>
+                      <div className="input-group">
+                        <label>Section 80D Deductions (Health Insurance) (&#8377;)</label>
+                        <input type="number" value={it80d} onChange={(e) => setIt80d(Math.max(0, +e.target.value))} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="calc-results-pane">
+                  <h3>Estimated Tax Liability</h3>
+                  
+                  <div className="visual-breakdown-bar">
+                    <span className="breakdown-title">Deduction vs Taxable vs Net Tax</span>
+                    <div className="bar-progress-container">
+                      <div className="bar-slice slice-deductions" style={{ width: `${itDedPct}%` }} title="Deductions"></div>
+                      <div className="bar-slice slice-taxable" style={{ width: `${itTaxablePct}%` }} title="Taxable Income"></div>
+                      <div className="bar-slice slice-liability" style={{ width: `${itLiabPct}%` }} title="Tax Liability"></div>
+                    </div>
+                    <div className="bar-legend">
+                      <span><span className="dot ded"></span> Deductions</span>
+                      <span><span class="dot taxable"></span> Taxable</span>
+                      <span><span className="dot liability"></span> Tax Due</span>
+                    </div>
+                  </div>
+
+                  <div className="results-rows">
+                    <div className="res-item">
+                      <span className="res-lbl">Gross Income</span>
+                      <span className="res-val">{formatCurrency(itIncome)}</span>
+                    </div>
+                    <div className="res-item">
+                      <span className="res-lbl">Eligible Deductions</span>
+                      <span className="res-val text-success">{formatCurrency(itDeduction)}</span>
+                    </div>
+                    <div className="res-item">
+                      <span className="res-lbl">Net Taxable Income</span>
+                      <span className="res-val">{formatCurrency(itTaxable)}</span>
+                    </div>
+                    <div className="res-item border-top">
+                      <span className="res-lbl">Basic Income Tax</span>
+                      <span className="res-val">{formatCurrency(itBasicTax)}</span>
+                    </div>
+                    <div className="res-item">
+                      <span className="res-lbl">Health &amp; Education Cess (4%)</span>
+                      <span className="res-val">{formatCurrency(itCess)}</span>
+                    </div>
+                    <div className="res-item total-row">
+                      <span className="res-lbl">Total Tax Liability</span>
+                      <span className="res-val highlight-value">{formatCurrency(itTotalTax)}</span>
+                    </div>
+                    <div className="res-item">
+                      <span className="res-lbl">Effective Tax Rate</span>
+                      <span className="res-val">{itEffRate}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* HRA Calculator */}
+            <div className={`calculator-view ${calcTab === 'hra' ? 'active' : ''}`}>
+              <div className="calc-grid">
+                <div className="calc-inputs-pane">
+                  <h3>Salary &amp; Rent Specifications</h3>
+                  <div className="input-group">
+                    <label>Basic Salary + DA (Annual &#8377;)</label>
+                    <div className="input-wrapper">
+                      <span className="input-prefix">&#8377;</span>
+                      <input type="number" value={hraBasic} onChange={(e) => setHraBasic(Math.max(0, +e.target.value))} />
+                    </div>
+                  </div>
+                  <div className="input-group">
+                    <label>House Rent Allowance (HRA) Received (Annual &#8377;)</label>
+                    <div className="input-wrapper">
+                      <span className="input-prefix">&#8377;</span>
+                      <input type="number" value={hraRecv} onChange={(e) => setHraRecv(Math.max(0, +e.target.value))} />
+                    </div>
+                  </div>
+                  <div className="input-group-row">
+                    <div className="input-group">
+                      <label>Actual Rent Paid (Annual &#8377;)</label>
+                      <input type="number" value={hraRent} onChange={(e) => setHraRent(Math.max(0, +e.target.value))} />
+                    </div>
+                    <div className="input-group">
+                      <label>Residential Location City</label>
+                      <select value={hraCity} onChange={(e) => setHraCity(e.target.value)}>
+                        <option value="metro">Metro (Mumbai, Delhi, Kolkata, Chennai)</option>
+                        <option value="non">Non-Metro Cities</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="calc-results-pane">
+                  <h3>HRA Exemption Summary</h3>
+                  <div className="results-rows">
+                    <div className="res-item">
+                      <span className="res-lbl">1. Actual HRA Received</span>
+                      <span className="res-val">{formatCurrency(hraRecv)}</span>
+                    </div>
+                    <div className="res-item">
+                      <span className="res-lbl">2. Rent Paid minus 10% of Basic</span>
+                      <span className="res-val">{formatCurrency(hraExcess)}</span>
+                    </div>
+                    <div className="res-item">
+                      <span className="res-lbl">3. {hraCity === 'metro' ? '50%' : '40%'} of Basic Salary</span>
+                      <span className="res-val">{formatCurrency(hraPctAmt)}</span>
+                    </div>
+                    <div className="res-item total-row">
+                      <span className="res-lbl">Tax Exempt HRA (Minimum of above)</span>
+                      <span className="res-val text-success">{formatCurrency(hraExempt)}</span>
+                    </div>
+                    <div className="res-item">
+                      <span className="res-lbl">Taxable HRA portion</span>
+                      <span className="res-val text-danger">{formatCurrency(hraTaxable)}</span>
+                    </div>
+                  </div>
+                  <div className="calc-info-note">
+                    <Info />
+                    <span>HRA exemptions are calculated under Section 10(13A) of the Income Tax Act. Only available under the Old Tax Regime.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Advance Tax Calculator */}
+            <div className={`calculator-view ${calcTab === 'adv' ? 'active' : ''}`}>
+              <div className="calc-grid">
+                <div className="calc-inputs-pane">
+                  <h3>Advance Tax Estimator</h3>
+                  <div className="input-group">
+                    <label>Estimated Annual Taxable Income (&#8377;)</label>
+                    <div className="input-wrapper">
+                      <span className="input-prefix">&#8377;</span>
+                      <input type="number" value={advIncome} onChange={(e) => setAdvIncome(Math.max(0, +e.target.value))} />
+                    </div>
+                  </div>
+                  <div className="input-group-row">
+                    <div className="input-group">
+                      <label>TDS Already Deducted (&#8377;)</label>
+                      <input type="number" value={advTds} onChange={(e) => setAdvTds(Math.max(0, +e.target.value))} />
+                    </div>
+                    <div className="input-group">
+                      <label>Advance Tax Paid till date (&#8377;)</label>
+                      <input type="number" value={advPaid} onChange={(e) => setAdvPaid(Math.max(0, +e.target.value))} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="calc-results-pane">
+                  <h3>Advance Tax Liability</h3>
+                  <div className="results-rows">
+                    <div className="res-item">
+                      <span className="res-lbl">Estimated Total Income Tax</span>
+                      <span className="res-val">{formatCurrency(advTotalTax)}</span>
+                    </div>
+                    <div className="res-item">
+                      <span className="res-lbl">Less: Total TDS Claimed</span>
+                      <span className="res-val text-success">- {formatCurrency(advTds)}</span>
+                    </div>
+                    <div className="res-item">
+                      <span className="res-lbl">Less: Paid Instalments</span>
+                      <span className="res-val text-success">- {formatCurrency(advPaid)}</span>
+                    </div>
+                    <div className="res-item total-row">
+                      <span className="res-lbl">Remaining Balance Due</span>
+                      <span className="res-val highlight-value">{formatCurrency(advDueBalance)}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="installments-timeline">
+                    <h4>Recommended Payment Schedule</h4>
+                    <div className="timeline-step">
+                      <span className="step-date">15 Jun (15%)</span>
+                      <span className="step-amt">{formatCurrency(advDueBalance * 0.15)}</span>
+                    </div>
+                    <div className="timeline-step">
+                      <span className="step-date">15 Sep (45%)</span>
+                      <span className="step-amt">{formatCurrency(advDueBalance * 0.45)}</span>
+                    </div>
+                    <div className="timeline-step">
+                      <span className="step-date">15 Dec (75%)</span>
+                      <span className="step-amt">{formatCurrency(advDueBalance * 0.75)}</span>
+                    </div>
+                    <div className="timeline-step">
+                      <span className="step-date">15 Mar (100%)</span>
+                      <span className="step-amt">{formatCurrency(advDueBalance)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* TDS Calculator */}
+            <div className={`calculator-view ${calcTab === 'tds' ? 'active' : ''}`}>
+              <div className="calc-grid">
+                <div className="calc-inputs-pane">
+                  <h3>TDS Parameters</h3>
+                  <div className="input-group">
+                    <label>Base Payment Amount (&#8377;)</label>
+                    <div className="input-wrapper">
+                      <span className="input-prefix">&#8377;</span>
+                      <input type="number" value={tdsAmt} onChange={(e) => setTdsAmt(Math.max(0, +e.target.value))} />
+                    </div>
+                  </div>
+                  <div className="input-group-row">
+                    <div className="input-group">
+                      <label>Nature of Payment</label>
+                      <select value={tdsNature} onChange={(e) => setTdsNature(e.target.value)}>
+                        <option value="0">Salary (Section 192) – Slab rates apply</option>
+                        <option value="1">Payments to Contractor (194C) – 1% / 2%</option>
+                        <option value="10">Professional Fees (194J) – 10%</option>
+                        <option value="10b">Rent on Land/Building (194I) – 10%</option>
+                        <option value="5">Commission / Brokerage (194H) – 5%</option>
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label>PAN Card Status of Payee</label>
+                      <select value={tdsPan} onChange={(e) => setTdsPan(e.target.value)}>
+                        <option value="1">PAN Furnished (Normal Rates)</option>
+                        <option value="2">No PAN Furnished (Double rates / Max 20%)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="calc-results-pane">
+                  <h3>TDS Calculation Summary</h3>
+                  <div className="results-rows">
+                    <div className="res-item">
+                      <span className="res-lbl">Gross Payable Amount</span>
+                      <span className="res-val">{formatCurrency(tdsAmt)}</span>
+                    </div>
+                    <div className="res-item">
+                      <span className="res-lbl">Applicable TDS Rate</span>
+                      <span className="res-val">{(tdsBaseRate * 100).toFixed(1)}%</span>
+                    </div>
+                    <div className="res-item total-row">
+                      <span className="res-lbl">TDS to be Deducted</span>
+                      <span className="res-val text-danger">{formatCurrency(tdsDeducted)}</span>
+                    </div>
+                    <div className="res-item">
+                      <span className="res-lbl">Net Payable to Vendor</span>
+                      <span className="res-val text-success">{formatCurrency(tdsNetPayable)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PAGE 4: DUE DATE TRACKER */}
+        <section className={`page ${activePage === 'tracker' ? 'active' : ''}`}>
+          <div className="section-container">
+            <div className="section-header">
+              <span className="section-badge">Live Counter</span>
+              <h1>Due Date Tracker</h1>
+              <p className="section-subtitle">Dynamic countdown cards for approaching tax tasks, categorized by remaining days and urgency.</p>
+            </div>
+
+            <div className="tracker-grid">
+              {trackerDateItems.map((item, idx) => {
+                const diff = Math.ceil((item.dueDate - todayDate) / (1000 * 60 * 60 * 24));
+                let urgencyClass = 'safe';
+                let urgencyLabel = `${diff} days left`;
+                let visualDays = `${diff}d`;
+
+                if (diff < 0) {
+                  urgencyClass = 'urgent';
+                  urgencyLabel = 'Overdue';
+                  visualDays = 'Overdue';
+                } else if (diff === 0) {
+                  urgencyClass = 'urgent';
+                  urgencyLabel = 'Due today';
+                  visualDays = '0d';
+                } else if (diff <= 3) {
+                  urgencyClass = 'urgent';
+                  urgencyLabel = `${diff} days left`;
+                } else if (diff <= 15) {
+                  urgencyClass = 'soon';
+                  urgencyLabel = `${diff} days left`;
+                }
+
+                const dateStr = item.dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+                return (
+                  <div key={idx} className={`tracker-card ${urgencyClass}`}>
+                    <div className={`t-days ${urgencyClass}`}>{visualDays}</div>
+                    <div className="t-title">{item.title}</div>
+                    <div className="t-date"><Calendar size={14} /> Due: {dateStr}</div>
+                    <span className="t-form">{item.form}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* PAGE 5: DOCUMENT CHECKLIST */}
+        <section className={`page ${activePage === 'checklist' ? 'active' : ''}`}>
+          <div className="section-container">
+            <div className="section-header">
+              <span className="section-badge">Task Preparation</span>
+              <h1>Document Compilation Checklists</h1>
+              <p className="section-subtitle">Verify you have collected all required details. Progress saves automatically in your browser.</p>
+            </div>
+
+            <div className="checklist-wrap">
+              {checklistItems.map((cl, ci) => {
+                const listState = checklistState[ci] || {};
+                const total = cl.items.length;
+                let doneCount = 0;
+                cl.items.forEach((_, ii) => {
+                  if (listState[ii] === true) doneCount++;
+                });
+                const percentage = total > 0 ? (doneCount / total) * 100 : 0;
+
+                return (
+                  <div key={ci} className="checklist-card">
+                    <h3><span className="ch-icon">{cl.icon}</span> {cl.title}</h3>
+                    <div className="checklist-items">
+                      {cl.items.map((item, ii) => {
+                        const isDone = listState[ii] === true;
+                        return (
+                          <div 
+                            key={ii} 
+                            className="check-item" 
+                            onClick={() => handleToggleCheckItem(ci, ii)}
+                          >
+                            <div className={`check-box ${isDone ? 'done' : ''}`}>
+                              {isDone && <Check />}
+                            </div>
+                            <span className={`check-label ${isDone ? 'done' : ''}`}>{item}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="progress-bar-container">
+                      <div className="progress-bar">
+                        <div className="progress-fill" style={{ width: `${percentage}%` }}></div>
+                      </div>
+                      <div className="prog-txt">{doneCount}/{total} items completed</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* PAGE 6: GST RATE FINDER */}
+        <section className={`page ${activePage === 'gst' ? 'active' : ''}`}>
+          <div className="section-container">
+            <div className="section-header">
+              <span className="section-badge">HSN &amp; SAC Directory</span>
+              <h1>GST Rate Finder</h1>
+              <p className="section-subtitle">Type key terms (e.g. "laptop", "cement") or HSN numbers to find tax slabs instantly.</p>
+            </div>
+
+            <div className="finder-layout">
+              <div className="search-box-wrapper">
+                <SearchCode className="search-icon" />
+                <input 
+                  type="text" 
+                  value={gstInput} 
+                  onChange={(e) => setGstInput(e.target.value)} 
+                  placeholder="Search goods/services, HSN codes, or sectors..." 
+                />
+                {gstInput && (
+                  <button className="search-clear-btn" onClick={() => setGstInput('')}>
+                    <X />
+                  </button>
+                )}
+              </div>
+
+              <div className="table-responsive">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>HSN/SAC Code</th>
+                      <th>Description of Goods / Services</th>
+                      <th>GST Rate</th>
+                      <th>Sector Category</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredGstList.map((g, idx) => (
+                      <tr key={idx}>
+                        <td><strong>{g.hsn}</strong></td>
+                        <td>{g.desc}</td>
+                        <td><span className={`rate-pill ${gstRateColors[g.rate] || 'r18'}`}>{g.rate}%</span></td>
+                        <td><span style={{ fontWeight: 600, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{g.cat}</span></td>
+                      </tr>
+                    ))}
+                    {filteredGstList.length === 0 && (
+                      <tr>
+                        <td colSpan="4" className="text-center" style={{ padding: '24px', color: 'var(--text-secondary)' }}>
+                          No matching records found. Try another search query.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PAGE 7: BUDGET 2025 HIGHLIGHTS */}
+        <section className={`page ${activePage === 'budget' ? 'active' : ''}`}>
+          <div className="section-container">
+            <div className="section-header">
+              <span className="section-badge">Direct Tax Reform</span>
+              <h1>Union Budget 2025 Highlights</h1>
+              <p className="section-subtitle">A concise brief of the Finance Act adjustments including slabs, exemptions, and corporate duties.</p>
+            </div>
+
+            <div className="budget-dashboard">
+              <div className="budget-panel-grid">
+                <div className="budget-card">
+                  <h3><ShieldCheck /> Personal Tax Slabs (New Regime)</h3>
+                  <div className="budget-list">
+                    <div className="b-list-item"><span>Up to &#8377;3,00,000</span><span className="badge badge-success">Nil</span></div>
+                    <div className="b-list-item"><span>&#8377;3,00,001 – &#8377;7,00,000</span><strong>5%</strong></div>
+                    <div className="b-list-item"><span>&#8377;7,00,001 – &#8377;10,00,000</span><strong>10%</strong></div>
+                    <div className="b-list-item"><span>&#8377;10,00,001 – &#8377;12,00,000</span><strong>15%</strong></div>
+                    <div className="b-list-item"><span>&#8377;12,00,001 – &#8377;15,00,000</span><strong>20%</strong></div>
+                    <div className="b-list-item"><span>Above &#8377;15,00,000</span><strong>30%</strong></div>
+                  </div>
+                </div>
+
+                <div className="budget-card">
+                  <h3><GraduationCap /> Prominent Deductions</h3>
+                  <div className="budget-list">
+                    <div className="b-list-item"><span>Standard Deduction (New)</span><strong className="text-success">&#8377;75,000 &#8593;</strong></div>
+                    <div className="b-list-item"><span>Rebate Limit u/s 87A</span><strong class="text-success">&#8377;12L Income</strong></div>
+                    <div className="b-list-item"><span>NPS Employer Contrib.</span><strong className="text-success">Up to 14%</strong></div>
+                    <div className="b-list-item"><span>Section 80C limit</span><strong>&#8377;1,50,000</strong></div>
+                    <div className="b-list-item"><span>Section 80D (Self)</span><strong>&#8377;25,000</strong></div>
+                    <div className="b-list-item"><span>Home Loan Int. (80EEA)</span><strong>&#8377;2,00,000</strong></div>
+                  </div>
+                </div>
+
+                <div className="budget-card">
+                  <h3><Percent /> Indirect Tax &amp; GST</h3>
+                  <div className="budget-list">
+                    <div className="b-list-item"><span>Health/Life Insurance Prem.</span><strong className="text-success">Proposed Exempt</strong></div>
+                    <div className="b-list-item"><span>EV Battery Components</span><strong className="text-success">5% &#8595;</strong></div>
+                    <div className="b-list-item"><span>Online Gaming &amp; Casinos</span><strong className="text-danger">28% Retained</strong></div>
+                    <div className="b-list-item"><span>Small Business Composition</span><strong className="text-success">&#8377;2Cr limit &#8593;</strong></div>
+                    <div className="b-list-item"><span>Mobile Phones &amp; Parts</span><strong className="text-success">Custom Duty 15%</strong></div>
+                  </div>
+                </div>
+
+                <div className="budget-card">
+                  <h3><Calculator /> Capital Gains &amp; Corporate</h3>
+                  <div className="budget-list">
+                    <div className="b-list-item"><span>Corporate Tax (Base)</span><strong>22% (Unchanged)</strong></div>
+                    <div className="b-list-item"><span>Short-Term CG (Equity)</span><strong className="text-danger">20% &#8593;</strong></div>
+                    <div className="b-list-item"><span>Long-Term CG (Exemption)</span><strong className="text-success">&#8377;1.25 Lakhs</strong></div>
+                    <div className="b-list-item"><span>Long-Term CG (Equity)</span><strong className="text-danger">12.5% &#8593;</strong></div>
+                    <div className="b-list-item"><span>Angel Tax (Startup)</span><strong className="text-success">Abolished</strong></div>
+                    <div className="b-list-item"><span>Share Buyback Tax</span><strong className="text-danger">Taxed in hands of investor</strong></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="budget-summary-panel">
+                <div className="panel-icon"><Info /></div>
+                <div className="panel-text">
+                  <strong>Official Regimen Notice:</strong> The New Tax Regime remains the baseline default choice. Old slabs can be claimed by submitting Form 10-IEA. Note that Rebate Section 87A keeps income up to &#8377;12 Lakhs exempt from taxation (net of standard deductions) under the updated budget parameters.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PAGE 8: CONTACT */}
+        <section className={`page ${activePage === 'contact' ? 'active' : ''}`}>
+          <div className="section-container">
+            <div className="section-header">
+              <span className="section-badge">Get in Touch</span>
+              <h1>Book a Free Consultation</h1>
+              <p className="section-subtitle">Speak with our chartered experts regarding taxation filings, audit protocols, or GST disputes.</p>
+            </div>
+
+            <div className="contact-layout">
+              <div className="contact-details-col">
+                <div className="contact-item">
+                  <span className="c-icon"><MapPin /></span>
+                  <div className="c-text">
+                    <span className="c-label">Corporate Office</span>
+                    <span className="c-val">42, MG Road, Central District, Bengaluru – 560001</span>
+                  </div>
+                </div>
+
+                <div className="contact-item">
+                  <span className="c-icon"><Phone /></span>
+                  <div className="c-text">
+                    <span className="c-label">Direct Telephone</span>
+                    <span className="c-val">+91 98450 12345</span>
+                  </div>
+                </div>
+
+                <div className="contact-item">
+                  <span className="c-icon"><Mail /></span>
+                  <div className="c-text">
+                    <span className="c-label">Email Inquiries</span>
+                    <span className="c-val">hello@finezy.in</span>
+                  </div>
+                </div>
+
+                <div className="contact-item">
+                  <span className="c-icon"><Clock /></span>
+                  <div className="c-text">
+                    <span className="c-label">Operating Hours</span>
+                    <span className="c-val">Monday – Saturday: 9:00 AM – 6:30 PM</span>
+                  </div>
+                </div>
+
+                <div className="contact-item highlight-whatsapp">
+                  <span className="c-icon"><MessageSquare /></span>
+                  <div className="c-text">
+                    <span className="c-label">Instant WhatsApp Help</span>
+                    <span className="c-val">+91 98450 12345</span>
+                  </div>
+                </div>
+              </div>
+
+              <form className="contact-form" id="consultation-form" onSubmit={handleContactSubmit}>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="contact-name">Full Name</label>
+                    <input type="text" id="contact-name" placeholder="John Doe" required />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="contact-email">Email Address</label>
+                    <input type="email" id="contact-email" placeholder="john@example.com" required />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="contact-phone">Phone Number</label>
+                  <input type="tel" id="contact-phone" placeholder="+91 XXXXX XXXXX" required />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="contact-service">Required Service</label>
+                  <select id="contact-service" required>
+                    <option value="">Choose consulting category...</option>
+                    <option value="ITR Filing">Income Tax Returns Filing</option>
+                    <option value="GST Setup">GST Registration &amp; Filing</option>
+                    <option value="Statutory Audit">Audit &amp; Assurance Services</option>
+                    <option value="Incorporation">Private Limited Company Setup</option>
+                    <option value="Bookkeeping">Corporate Accounting &amp; Ledger</option>
+                    <option value="Advisory">Financial Strategy &amp; Advisory</option>
+                    <option value="TDS Filing">TDS Quarterly Compliance</option>
+                    <option value="Other">Other Regulatory Queries</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="contact-msg">Requirement Description</label>
+                  <textarea id="contact-msg" placeholder="Summarize your tax context or operational issue..." required></textarea>
+                </div>
+
+                <button type="submit" className="submit-btn" disabled={savingForm}>
+                  <span>{savingForm ? 'Saving...' : 'Book Free Consultation'}</span>
+                  <Send />
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        {/* PAGE 9: MEMBER LOGIN / SIGN UP */}
+        <section className={`page ${activePage === 'login' ? 'active' : ''}`}>
+          <div className="auth-container">
+            <div className="auth-card">
+              <div className="auth-logo">
+                <span className="logo-icon"><ShieldCheck /></span>
+                <h2>Fin<span>Ezy</span> Team</h2>
+              </div>
+              <p className="auth-subtitle">Access your professional client inquiries, lead analytics, and scheduling logs.</p>
+              
+              <div className="auth-toggle">
+                <button 
+                  type="button"
+                  className={`auth-toggle-btn ${authMode === 'login' ? 'active' : ''}`} 
+                  onClick={() => setAuthMode('login')}
+                >
+                  Sign In
+                </button>
+                <button 
+                  type="button"
+                  className={`auth-toggle-btn ${authMode === 'signup' ? 'active' : ''}`} 
+                  onClick={() => setAuthMode('signup')}
+                >
+                  Register Team
+                </button>
+              </div>
+
+              <form onSubmit={handleAuth} className="auth-form">
+                <div className="form-group">
+                  <label htmlFor="auth-email">Team Email</label>
+                  <div className="auth-input-wrapper">
+                    <span className="auth-input-icon"><User size={16} /></span>
+                    <input 
+                      type="email" 
+                      id="auth-email" 
+                      placeholder="name@finezy.in" 
+                      value={authEmail} 
+                      onChange={(e) => setAuthEmail(e.target.value)} 
+                      required 
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="auth-password">Password</label>
+                  <div className="auth-input-wrapper">
+                    <span className="auth-input-icon"><Lock size={16} /></span>
+                    <input 
+                      type="password" 
+                      id="auth-password" 
+                      placeholder="••••••••" 
+                      value={authPassword} 
+                      onChange={(e) => setAuthPassword(e.target.value)} 
+                      required 
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" className="auth-submit-btn" disabled={authLoading}>
+                  {authLoading ? (
+                    <span className="flex-center-y justify-center gap-2">
+                      <RefreshCw className="animate-spin" size={16} style={{ display: 'inline-block', marginRight: '6px' }} />
+                      <span>{authMode === 'login' ? 'Signing in...' : 'Registering...'}</span>
+                    </span>
+                  ) : (
+                    <span>{authMode === 'login' ? 'Sign In to Dashboard' : 'Create Team Account'}</span>
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        {/* PAGE 10: TEAM DASHBOARD & ANALYTICS */}
+        <section className={`page ${activePage === 'dashboard' ? 'active' : ''}`}>
+          {!user ? (
+            <div className="unauthorized-card text-center" style={{ padding: '80px 24px' }}>
+              <AlertTriangle size={48} className="text-danger" style={{ marginBottom: '16px', display: 'inline-block' }} />
+              <h2>Access Restricted</h2>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>Please sign in to view the team dashboard and consultation logs.</p>
+              <button className="btn-primary" onClick={() => handlePageChange('login')} style={{ display: 'inline-flex' }}>
+                Go to Sign In
+              </button>
+            </div>
+          ) : (
+            <div className="dashboard-wrapper">
+              <div className="dashboard-header-panel">
+                <div className="db-header-title">
+                  <span className="db-badge">Active Session</span>
+                  <h1>Team Portal &amp; Analytics</h1>
+                  <p>Welcome back, <strong>{user.email}</strong>. Here is your dashboard overview.</p>
+                </div>
+                <div className="db-actions">
+                  <button className="btn-secondary" onClick={fetchConsultationsData} disabled={loadingConsultations} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    <RefreshCw size={14} className={loadingConsultations ? 'animate-spin' : ''} style={{ marginRight: '6px' }} />
+                    Sync Data
+                  </button>
+                  <button className="btn-secondary" onClick={handleSignOut} style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--danger)', borderColor: 'var(--danger-light)' }}>
+                    <LogOut size={14} style={{ marginRight: '6px' }} />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+
+              {/* Analytics widgets */}
+              <div className="dashboard-stats-grid">
+                <div className="db-stat-card">
+                  <div className="db-stat-icon-wrapper blue">
+                    <MessageSquare size={20} />
+                  </div>
+                  <div className="db-stat-info">
+                    <span className="db-stat-number">{consultations.length}</span>
+                    <span className="db-stat-label">Total Inquiries</span>
+                  </div>
+                </div>
+
+                <div className="db-stat-card">
+                  <div className="db-stat-icon-wrapper green">
+                    <CheckCircle2 size={20} />
+                  </div>
+                  <div className="db-stat-info">
+                    <span className="db-stat-number">
+                      {consultations.filter(c => c.created_at && new Date(c.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
+                    </span>
+                    <span className="db-stat-label">New This Week</span>
+                  </div>
+                </div>
+
+                <div className="db-stat-card">
+                  <div className="db-stat-icon-wrapper orange">
+                    <Briefcase size={20} />
+                  </div>
+                  <div className="db-stat-info">
+                    {/* Most requested service */}
+                    <span className="db-stat-number" style={{ fontSize: '1.15rem', padding: '4px 0' }}>
+                      {(() => {
+                        if (consultations.length === 0) return 'None';
+                        const serviceCounts = {};
+                        consultations.forEach(c => {
+                          if (c.service) {
+                            serviceCounts[c.service] = (serviceCounts[c.service] || 0) + 1;
+                          }
+                        });
+                        let maxService = 'None';
+                        let maxCount = 0;
+                        Object.entries(serviceCounts).forEach(([svc, count]) => {
+                          if (count > maxCount) {
+                            maxCount = count;
+                            maxService = svc;
+                          }
+                        });
+                        return maxService.length > 18 ? maxService.substring(0, 16) + '...' : maxService;
+                      })()}
+                    </span>
+                    <span className="db-stat-label">Top Service Category</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Distribution Charts */}
+              <div className="dashboard-two-column">
+                <div className="dashboard-card chart-card">
+                  <h3>Service Request Distribution</h3>
+                  <p className="card-subtitle">Inquiry count and percentage breakdown by selected category.</p>
+                  
+                  <div className="chart-bars-list" style={{ marginTop: '20px' }}>
+                    {(() => {
+                      if (consultations.length === 0) {
+                        return <p style={{ color: 'var(--text-tertiary)', textAlign: 'center', padding: '24px 0' }}>No submissions data available.</p>;
+                      }
+                      
+                      const serviceCounts = {};
+                      consultations.forEach(c => {
+                        if (c.service) {
+                          serviceCounts[c.service] = (serviceCounts[c.service] || 0) + 1;
+                        }
+                      });
+
+                      return Object.entries(serviceCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([svc, count]) => {
+                          const pct = ((count / consultations.length) * 100).toFixed(0);
+                          return (
+                            <div className="chart-bar-item" key={svc}>
+                              <div className="chart-bar-info">
+                                <span className="chart-bar-name">{svc}</span>
+                                <span className="chart-bar-count"><strong>{count}</strong> ({pct}%)</span>
+                              </div>
+                              <div className="chart-bar-track">
+                                <div className="chart-bar-fill" style={{ width: `${pct}%` }}></div>
+                              </div>
+                            </div>
+                          );
+                        });
+                    })()}
+                  </div>
+                </div>
+
+                <div className="dashboard-card info-summary-card">
+                  <h3>Team Operations Guide</h3>
+                  <div className="ops-list" style={{ marginTop: '16px' }}>
+                    <div className="ops-item">
+                      <div className="ops-bullet">1</div>
+                      <div className="ops-content">
+                        <strong>Review New Inquiries</strong>
+                        <p>Acknowledge client consultation submissions within 24 hours of standard submission timestamps.</p>
+                      </div>
+                    </div>
+                    <div className="ops-item">
+                      <div className="ops-bullet">2</div>
+                      <div className="ops-content">
+                        <strong>Verify Details</strong>
+                        <p>Before calling, cross-examine the client's preferred filing category (e.g., GST vs Income Tax).</p>
+                      </div>
+                    </div>
+                    <div className="ops-item">
+                      <div className="ops-bullet">3</div>
+                      <div className="ops-content">
+                        <strong>Update Consultation Status</strong>
+                        <p>Keep records organized. Direct questions to the primary compliance auditor.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Consultation Logs CRM Table */}
+              <div className="dashboard-card table-card" style={{ marginTop: '24px' }}>
+                <div className="table-card-header">
+                  <h3>Recent Consultation Logs</h3>
+                  <span className="total-rows-badge">{consultations.length} records</span>
+                </div>
+                
+                {loadingConsultations ? (
+                  <div className="table-loading text-center" style={{ padding: '48px 0' }}>
+                    <RefreshCw size={24} className="animate-spin text-primary" style={{ margin: '0 auto 12px auto' }} />
+                    <p style={{ color: 'var(--text-secondary)' }}>Loading submissions from Supabase...</p>
+                  </div>
+                ) : consultations.length === 0 ? (
+                  <div className="table-empty text-center" style={{ padding: '48px 0' }}>
+                    <MessageSquare size={36} style={{ color: 'var(--text-tertiary)', margin: '0 auto 12px auto', display: 'inline-block' }} />
+                    <p style={{ color: 'var(--text-secondary)' }}>No consultation requests registered in database yet.</p>
+                  </div>
+                ) : (
+                  <div className="table-responsive" style={{ marginTop: '16px' }}>
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Client Name</th>
+                          <th>Contact Info</th>
+                          <th>Required Service</th>
+                          <th>Requirement Description</th>
+                          <th>Submitted At</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {consultations.map((c) => {
+                          const dateStr = c.created_at 
+                            ? new Date(c.created_at).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })
+                            : 'N/A';
+                          return (
+                            <tr key={c.id}>
+                              <td><strong>{c.name}</strong></td>
+                              <td>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{c.email}</div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>{c.phone}</div>
+                              </td>
+                              <td><span className="category-tag tag-it">{c.service}</span></td>
+                              <td><span className="table-msg-clamp" title={c.message} style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontSize: '0.85rem' }}>{c.message}</span></td>
+                              <td><span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{dateStr}</span></td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+      </main>
+
+      {/* FOOTER */}
+      <footer>
+        <div className="footer-container">
+          <div className="footer-brand">
+            <div className="logo">
+              <span className="logo-icon"><ShieldCheck /></span>
+              <span>Fin<span className="brand-highlight">Ezy</span></span>
+            </div>
+            <p>Your comprehensive resource center for direct tax, indirect tax, and corporate compliance metrics.</p>
+          </div>
+
+          <div className="footer-links-col">
+            <h4>Resources</h4>
+            <button onClick={() => handlePageChange('home')}>Home Dashboard</button>
+            <button onClick={() => handlePageChange('calendar')}>Due Date Calendar</button>
+            <button onClick={() => handlePageChange('calculator')}>Tax Calculators</button>
+            <button onClick={() => handlePageChange('gst')}>GST Rates finder</button>
+            <button onClick={() => handlePageChange('contact')}>Consulting Booking</button>
+          </div>
+
+          <div className="footer-copy-col">
+            <p>&copy; 2026 FinEzy. Crafted for CA professionals, students, and businesses.</p>
+            <p className="disclaimer">Disclaimer: Calculations provided are estimates. Always cross-verify calculations against official notifications before executing filing returns.</p>
+          </div>
+        </div>
+      </footer>
+
+      {/* CUSTOM TOAST NOTIFICATIONS */}
+      <div id="toast-container" className="toast-container">
+        {toasts.map(t => (
+          <div key={t.id} className={`toast toast-${t.type}`}>
+            <div className="toast-icon">
+              {t.type === 'success' ? <CheckCircle2 /> : t.type === 'error' ? <AlertTriangle /> : <Info />}
+            </div>
+            <div className="toast-content">
+              <div className="toast-title">{t.title}</div>
+              <div className="toast-message">{t.message}</div>
+            </div>
+            <button className="toast-close" onClick={() => removeToast(t.id)}><X size={14} /></button>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+</file>
+
+</files>

@@ -999,7 +999,7 @@ export default function Page() {
                 <p>Compute Income Tax under old/new regimes, HRA, Advance Tax, and TDS instantly.</p>
                 <div className="feat-footer">
                   <span className="feat-tag">FY 2025-26</span>
-                  <span class="feat-link">Open <ChevronRight /></span>
+                  <span className="feat-link">Open <ChevronRight /></span>
                 </div>
               </div>
 
@@ -1241,7 +1241,7 @@ export default function Page() {
                     </div>
                     <div className="bar-legend">
                       <span><span className="dot ded"></span> Deductions</span>
-                      <span><span class="dot taxable"></span> Taxable</span>
+                      <span><span className="dot taxable"></span> Taxable</span>
                       <span><span className="dot liability"></span> Tax Due</span>
                     </div>
                   </div>
@@ -1657,7 +1657,7 @@ export default function Page() {
                   <h3><GraduationCap /> Prominent Deductions</h3>
                   <div className="budget-list">
                     <div className="b-list-item"><span>Standard Deduction (New)</span><strong className="text-success">&#8377;75,000 &#8593;</strong></div>
-                    <div className="b-list-item"><span>Rebate Limit u/s 87A</span><strong class="text-success">&#8377;12L Income</strong></div>
+                    <div className="b-list-item"><span>Rebate Limit u/s 87A</span><strong className="text-success">&#8377;12L Income</strong></div>
                     <div className="b-list-item"><span>NPS Employer Contrib.</span><strong className="text-success">Up to 14%</strong></div>
                     <div className="b-list-item"><span>Section 80C limit</span><strong>&#8377;1,50,000</strong></div>
                     <div className="b-list-item"><span>Section 80D (Self)</span><strong>&#8377;25,000</strong></div>
