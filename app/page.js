@@ -3187,7 +3187,7 @@ export default function Page() {
       <body>
         <!-- Portal Watermark in good transparency -->
         <div class="watermark-container">
-          <div class="watermark-brand-title">FINEZY PORTAL</div>
+          <div class="watermark-brand-title">FINTEZY PORTAL</div>
           <div class="watermark-subtext">Statutory Compliance &amp; CA Audit</div>
         </div>
 
@@ -3196,7 +3196,7 @@ export default function Page() {
           <div class="portal-header">
             <div class="brand-logo-area">
               <div>
-                <div class="brand-name">Fin<span class="brand-highlight">Ezy</span></div>
+                <div class="brand-name">Fin<span class="brand-highlight">tezy</span></div>
                 <div class="brand-tagline">Chartered Accountancy &amp; Statutory Compliance Portal</div>
               </div>
             </div>
@@ -5563,7 +5563,7 @@ export default function Page() {
             <div className="auth-card">
               <div className="auth-logo">
                 <span className="logo-icon"><ShieldCheck /></span>
-                <h2>Fin<span>Ezy</span> Team</h2>
+                <h2>Fin<span>tezy</span> Team</h2>
               </div>
               <p className="auth-subtitle">Access your professional client inquiries, lead analytics, and scheduling logs.</p>
               
@@ -5659,7 +5659,7 @@ export default function Page() {
                     <input 
                       type="email" 
                       id="auth-email" 
-                      placeholder="name@finezy.in" 
+                      placeholder="name@fintezy.in" 
                       value={authEmail} 
                       onChange={(e) => setAuthEmail(e.target.value)} 
                       required 

@@ -118,7 +118,7 @@ export default function ProtectedRoute({ children, onRedirect, redirectTo = '/lo
             lineHeight: 1.5
           }}
         >
-          Checking your authentication status and permissions securely with FinEzy.
+          Checking your authentication status and permissions securely with Fintezy.
         </p>
       </div>
     );

@@ -1,7 +1,7 @@
 {
-  "name": "finezy-landing-page",
+  "name": "fintezy-landing-page",
   "version": "1.0.0",
-  "description": "FinEzy CA Professional Resource Portal",
+  "description": "Fintezy CA Professional Resource Portal",
   "main": "index.html",
   "scripts": {
     "dev": "next dev",
