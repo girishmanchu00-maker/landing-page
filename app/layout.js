@@ -14,12 +14,20 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  title: 'FinEzy — Premium CA & Compliance Resource Portal',
-  description: 'Calculate taxes (Income Tax, HRA, TDS, Advance Tax), search GST rates, track upcoming due dates, view ITR filing checklists, and explore Budget 2025 highlights. Built for CA professionals, students, and businesses.',
-  keywords: 'Income tax calculator, GST rate finder, CA compliance calendar, due date tracker, tax filing checklists, Budget 2025 slabs, HRA exemption calculator, TDS calculator',
+  title: 'Fintezy — Finance, Tax & Compliance — Made Easy',
+  description: 'A fintech solution that makes finance, tax, and compliance easy for students, consultants, and corporates. Calculate taxes, track compliance deadlines, search GST rates, and access statutory audit checklists.',
+  keywords: 'Fintezy, Income tax calculator, GST rate finder, CA compliance calendar, due date tracker, tax filing checklists, Budget 2025 slabs, HRA exemption calculator, TDS calculator',
+  icons: {
+    icon: [
+      { url: '/fintezy.png', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' }
+    ],
+    shortcut: '/fintezy.png',
+    apple: '/fintezy.png',
+  },
   openGraph: {
-    title: 'FinEzy — Premium CA & Compliance Resource Portal',
-    description: 'All-in-one financial resource suite with calculators, due dates, GST rate finder, checklist persistence, and modern dashboard.',
+    title: 'Fintezy — Finance, Tax & Compliance — Made Easy',
+    description: 'A fintech solution that makes finance, tax, and compliance easy for students, consultants, and corporates.',
     type: 'website',
   },
 };

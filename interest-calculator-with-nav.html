@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Finance — Interest Calculator</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --card: #ffffff;
+            --accent: #0b63d6;
+            --muted: #6b7280;
+            --success: #0f9d58;
+            --danger: #d9534f;
+            font-family: Inter, system-ui, Segoe UI, Roboto, "Helvetica Neue", Arial;
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+            color: #0f1724
+        }
+
+        .nav {
+            background: #fff;
+            border-bottom: 1px solid #eef2f7;
+            position: sticky;
+            top: 0;
+            z-index: 50
+        }
+
+        .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            gap: 12px
+        }
+
+        .brand {
+            font-weight: 700;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .menu {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .menu .dropdown {
+            position: relative
+        }
+
+        .menu button,
+        .menu a {
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #0f1724
+        }
+
+        .menu button:hover,
+        .menu a:hover {
+            background: #f1f6ff
+        }
+
+        .dropdown-list {
+            position: absolute;
+            top: 44px;
+            left: 0;
+            background: #fff;
+            border: 1px solid #eef2f7;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(11, 99, 214, 0.06);
+            display: none;
+            min-width: 200px
+        }
+
+        .dropdown-list a {
+            display: block;
+            padding: 10px 12px;
+            text-decoration: none;
+            color: #0f1724;
+            border-bottom: 1px solid #f5f7fb
+        }
+
+        .dropdown-list a:last-child {
+            border-bottom: none
+        }
+
+        .dropdown-list a:hover {
+            background: #f8fbff
+        }
+
+        .wrap {
+            max-width: 980px;
+            margin: 28px auto;
+            padding: 20px
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 18px
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 6px 18px rgba(11, 99, 214, 0.06)
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px
+        }
+
+        input[type=number],
+        select,
+        input[type=text] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e6e9ef;
+            border-radius: 8px;
+            font-size: 14px
+        }
+
+        .seg {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px
+        }
+
+        .seg button {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #e6e9ef;
+            background: #fff;
+            cursor: pointer
+        }
+
+        .seg button.active {
+            background: linear-gradient(90deg, var(--accent), #2b8cff);
+            color: #fff;
+            border-color: transparent
+        }
+
+        .row {
+            display: flex;
+            gap: 12px
+        }
+
+        .row>* {
+            flex: 1
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .result {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f8fbff;
+            border: 1px solid #e6f0ff
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 13px
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #eef2f7;
+            text-align: right
+        }
+
+        th {
+            background: #fbfdff;
+            text-align: center;
+            font-weight: 600
+        }
+
+        .small {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        button.ghost {
+            background: #fff;
+            border: 1px solid #e6e9ef;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        .error {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 8px
+        }
+
+        .success {
+            color: var(--success);
+            font-size: 13px;
+            margin-top: 8px
+        }
+
+        @media(max-width:880px) {
+            .grid {
+                grid-template-columns: 1fr
+            }
+
+            .menu {
+                display: none
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top navigation -->
+    <nav class="nav" aria-label="Main navigation">
+        <div class="nav-inner">
+            <div class="brand">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <rect x="2" y="2" width="20" height="20" rx="6" fill="#0b63d6"></rect>
+                    <path d="M7 13h10M7 9h10" stroke="#fff" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+                Finance Portal
+            </div>
+
+            <div class="menu" role="menubar" aria-label="Top menu">
+                <div class="dropdown" id="nav-finance">
+                    <button id="finance-btn" aria-haspopup="true" aria-expanded="false">Finance ▾</button>
+                    <div class="dropdown-list" role="menu" aria-label="Finance menu">
+                        <a href="#interest-calculator" role="menuitem" id="nav-interest">Interest Calculator</a>
+                        <!-- Add more finance items here -->
+                    </div>
+                </div>
+                <a href="#" id="nav-home">Home</a>
+                <a href="#" id="nav-about">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="wrap" id="interest-calculator">
+        <header>
+            <h1>Interest Calculator</h1>
+            <div class="small muted">Deposit and Loan calculators with amortization and CSV export</div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <div class="seg" role="tablist" aria-label="Mode selector">
+                    <button id="mode-deposit" class="active" aria-pressed="true">Deposit</button>
+                    <button id="mode-loan">Loan</button>
+                </div>
+
+                <!-- Deposit form -->
+                <div id="deposit-panel">
+                    <label>Principal</label>
+                    <input id="dep-principal" type="number" min="0" step="0.01" value="10000">
+
+                    <div class="row" style="margin-top:10px">
+                        <div>
+                            <label>Annual Rate %</label>
+                            <input id="dep-rate" type="number" min="0" step="0.01" value="6.5">
+                        </div>
+                        <div>
+                            <label>Time</label>
+                            <input id="dep-time" type="number" min="0" step="0.01" value="3">
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:10px">
+                        <div>
+                            <label>Time Unit</label>
+                            <select id="dep-time-unit">
+                                <option value="years">Years</option>
+                                <option value="months">Months</option>
+                                <option value="days">Days</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Compounding</label>
+                            <select id="dep-comp">
+                                <option value="simple">Simple Interest</option>
+                                <option value="1">Annually</option>
+                                <option value="2">Semiannual</option>
+                                <option value="4">Quarterly</option>
+                                <option value="12" selected>Monthly</option>
+                                <option value="365">Daily</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:10px">
+                        <label>Day Count Convention</label>
+                        <select id="dep-daycount">
+                            <option value="actual/365">Actual/365</option>
+                            <option value="actual/360">Actual/360</option>
+                            <option value="30/360">30/360</option>
+                        </select>
+                    </div>
+
+                    <div class="actions">
+                        <button id="dep-calc" class="primary">Calculate Deposit</button>
+                        <button id="dep-reset" class="ghost">Reset</button>
+                    </div>
+
+                    <div id="dep-error" class="error" role="alert" style="display:none"></div>
+                    <div id="dep-result" class="result" style="display:none"></div>
+                </div>
+
+                <!-- Loan form -->
+                <div id="loan-panel" style="display:none">
+                    <label>Loan Amount</label>
+                    <input id="loan-amount" type="number" min="0" step="0.01" value="500000">
+
+                    <div class="row" style="margin-top:10px">
+                        <div>
+                            <label>Annual Rate %</label>
+                            <input id="loan-rate" type="number" min="0" step="0.01" value="7.25">
+                        </div>
+                        <div>
+                            <label>Tenure</label>
+                            <input id="loan-tenure" type="number" min="1" step="1" value="240">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:10px">
+                        <label>Tenure Unit</label>
+                        <select id="loan-tenure-unit">
+                            <option value="months" selected>Months</option>
+                            <option value="years">Years</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-top:10px">
+                        <label>Extra Monthly Prepayment (optional)</label>
+                        <input id="loan-prepay" type="number" min="0" step="0.01" value="0">
+                    </div>
+
+                    <div style="margin-top:10px">
+                        <label>Day Count Convention</label>
+                        <select id="loan-daycount">
+                            <option value="actual/365">Actual/365</option>
+                            <option value="actual/360">Actual/360</option>
+                            <option value="30/360">30/360</option>
+                        </select>
+                    </div>
+
+                    <div class="actions">
+                        <button id="loan-calc" class="primary">Calculate Loan</button>
+                        <button id="loan-reset" class="ghost">Reset</button>
+                    </div>
+
+                    <div id="loan-error" class="error" role="alert" style="display:none"></div>
+                    <div id="loan-result" class="result" style="display:none"></div>
+                </div>
+            </div>
+
+            <div class="card" id="right-card">
+                <div id="summary" class="small muted">Results and amortization schedule appear here.</div>
+
+                <div id="summary-content" style="display:none">
+                    <div id="summary-deposit" style="display:none">
+                        <h3 style="margin:8px 0">Deposit Result</h3>
+                        <div class="small">Principal <strong id="s-dep-principal"></strong></div>
+                        <div class="small">Interest <strong id="s-dep-interest"></strong></div>
+                        <div class="small">Maturity Amount <strong id="s-dep-maturity"></strong></div>
+                        <div class="small">Effective Annual Rate <strong id="s-dep-ear"></strong></div>
+                    </div>
+
+                    <div id="summary-loan" style="display:none">
+                        <h3 style="margin:8px 0">Loan Result</h3>
+                        <div class="small">Monthly EMI <strong id="s-loan-emi"></strong></div>
+                        <div class="small">Total Payment <strong id="s-loan-total"></strong></div>
+                        <div class="small">Total Interest <strong id="s-loan-interest"></strong></div>
+                        <div style="margin-top:10px">
+                            <button id="toggle-schedule" class="ghost">Show Amortization Schedule</button>
+                            <button id="export-csv" class="ghost">Export Schedule CSV</button>
+                        </div>
+                        <div id="schedule-wrap" style="margin-top:12px;display:none">
+                            <table id="schedule-table" aria-live="polite">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Payment</th>
+                                        <th>Principal</th>
+                                        <th>Interest</th>
+                                        <th>Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer style="margin-top:18px" class="small muted">
+            **Note**: Calculations are illustrative. For bank-accurate figures check product terms. Day count
+            conventions affect short-term interest.
+        </footer>
+    </div>
+
+    <script>
+        /* Utilities */
+        const $ = id => document.getElementById(id);
+        const fmtCurrency = (v) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(v);
+        function pctToDecimal(p) { return Number(p) / 100; }
+        function convertToYears(value, unit, daycount) {
+            if (unit === 'years') return Number(value);
+            if (unit === 'months') return Number(value) / 12;
+            if (unit === 'days') {
+                if (daycount === 'actual/365') return Number(value) / 365;
+                if (daycount === 'actual/360') return Number(value) / 360;
+                return Number(value) / 365;
+            }
+            return Number(value);
+        }
+
+        /* Deposit and loan functions (same as before) */
+        function calcSimpleInterest(P, ratePercent, timeYears) {
+            const r = pctToDecimal(ratePercent);
+            const interest = P * r * timeYears;
+            return { interest, maturity: P + interest, EAR: r };
+        }
+        function calcCompound(P, ratePercent, timeYears, n) {
+            const r = pctToDecimal(ratePercent);
+            const A = P * Math.pow(1 + r / n, n * timeYears);
+            const interest = A - P;
+            const EAR = Math.pow(1 + r / n, n) - 1;
+            return { interest, maturity: A, EAR };
+        }
+        function calcEMI(loanAmount, annualRatePercent, tenureMonths) {
+            const r = pctToDecimal(annualRatePercent);
+            const i = r / 12;
+            const N = Number(tenureMonths);
+            if (N <= 0) return { emi: 0, totalPayment: 0, totalInterest: 0 };
+            if (i === 0) {
+                const emi = loanAmount / N;
+                return { emi, totalPayment: emi * N, totalInterest: (emi * N) - loanAmount };
+            }
+            const factor = Math.pow(1 + i, N);
+            const emi = loanAmount * (i * factor) / (factor - 1);
+            const totalPayment = emi * N;
+            const totalInterest = totalPayment - loanAmount;
+            return { emi, totalPayment, totalInterest };
+        }
+        function amortizationSchedule(loanAmount, annualRatePercent, tenureMonths, extraMonthly = 0) {
+            const { emi } = calcEMI(loanAmount, annualRatePercent, tenureMonths);
+            const r = pctToDecimal(annualRatePercent);
+            const i = r / 12;
+            let balance = loanAmount;
+            const schedule = [];
+            for (let m = 1; m <= tenureMonths && balance > 0.0001; m++) {
+                const interest = balance * i;
+                const principal = Math.min(balance, (emi + Number(extraMonthly)) - interest);
+                const payment = principal + interest;
+                balance = Math.max(0, balance - principal);
+                schedule.push({ month: m, payment, principal, interest, balance });
+            }
+            return schedule;
+        }
+
+        /* Navigation dropdown behavior and smooth scroll */
+        const financeBtn = $('finance-btn');
+        const financeDropdown = document.querySelector('.dropdown-list');
+        financeBtn.addEventListener('click', (e) => {
+            const expanded = financeBtn.getAttribute('aria-expanded') === 'true';
+            financeBtn.setAttribute('aria-expanded', String(!expanded));
+            financeDropdown.style.display = expanded ? 'none' : 'block';
+        });
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                financeDropdown.style.display = 'none';
+                financeBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+        document.querySelectorAll('.dropdown-list a').forEach(a => {
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = a.getAttribute('href').slice(1);
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // close dropdown
+                    financeDropdown.style.display = 'none';
+                    financeBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+
+        /* Existing UI wiring from previous file */
+        function show(el) { el.style.display = ''; }
+        function hide(el) { el.style.display = 'none'; }
+        function setActiveMode(mode) {
+            $('mode-deposit').classList.toggle('active', mode === 'deposit');
+            $('mode-loan').classList.toggle('active', mode === 'loan');
+            $('deposit-panel').style.display = mode === 'deposit' ? '' : 'none';
+            $('loan-panel').style.display = mode === 'loan' ? '' : 'none';
+            $('summary-content').style.display = 'none';
+            $('summary-deposit').style.display = 'none';
+            $('summary-loan').style.display = 'none';
+            $('summary').textContent = 'Results and amortization schedule appear here.';
+        }
+        $('mode-deposit').addEventListener('click', () => setActiveMode('deposit'));
+        $('mode-loan').addEventListener('click', () => setActiveMode('loan'));
+
+        /* Deposit handlers */
+        $('dep-calc').addEventListener('click', () => {
+            hide($('dep-error'));
+            const P = Number($('dep-principal').value);
+            const rate = Number($('dep-rate').value);
+            const timeVal = Number($('dep-time').value);
+            const timeUnit = $('dep-time-unit').value;
+            const comp = $('dep-comp').value;
+            const daycount = $('dep-daycount').value;
+            if (isNaN(P) || P < 0) { $('dep-error').textContent = 'Enter a valid principal.'; show($('dep-error')); return; }
+            if (isNaN(rate) || rate < 0) { $('dep-error').textContent = 'Enter a valid annual rate.'; show($('dep-error')); return; }
+            if (isNaN(timeVal) || timeVal <= 0) { $('dep-error').textContent = 'Enter a valid time period.'; show($('dep-error')); return; }
+            const years = convertToYears(timeVal, timeUnit, daycount);
+            let res;
+            if (comp === 'simple') { res = calcSimpleInterest(P, rate, years); }
+            else { const n = Number(comp); res = calcCompound(P, rate, years, n); }
+            $('dep-result').innerHTML = `
+    <div><strong>Maturity</strong> ${fmtCurrency(res.maturity)}</div>
+    <div class="small">Interest ${fmtCurrency(res.interest)}</div>
+    <div class="small">Effective Annual Rate ${(res.EAR * 100).toFixed(4)}%</div>
+  `;
+            show($('dep-result'));
+            $('summary-content').style.display = '';
+            $('summary-deposit').style.display = '';
+            $('summary-loan').style.display = 'none';
+            $('s-dep-principal').textContent = fmtCurrency(P);
+            $('s-dep-interest').textContent = fmtCurrency(res.interest);
+            $('s-dep-maturity').textContent = fmtCurrency(res.maturity);
+            $('s-dep-ear').textContent = (res.EAR * 100).toFixed(4) + '%';
+            $('summary').textContent = 'Deposit calculation complete.';
+        });
+        $('dep-reset').addEventListener('click', () => {
+            $('dep-principal').value = 10000;
+            $('dep-rate').value = 6.5;
+            $('dep-time').value = 3;
+            $('dep-comp').value = 12;
+            $('dep-time-unit').value = 'years';
+            hide($('dep-result')); hide($('dep-error'));
+        });
+
+        /* Loan handlers */
+        $('loan-calc').addEventListener('click', () => {
+            hide($('loan-error'));
+            const loan = Number($('loan-amount').value);
+            const rate = Number($('loan-rate').value);
+            let tenure = Number($('loan-tenure').value);
+            const tenureUnit = $('loan-tenure-unit').value;
+            const prepay = Number($('loan-prepay').value);
+            if (isNaN(loan) || loan <= 0) { $('loan-error').textContent = 'Enter a valid loan amount.'; show($('loan-error')); return; }
+            if (isNaN(rate) || rate < 0) { $('loan-error').textContent = 'Enter a valid annual rate.'; show($('loan-error')); return; }
+            if (isNaN(tenure) || tenure <= 0) { $('loan-error').textContent = 'Enter a valid tenure.'; show($('loan-error')); return; }
+            if (tenureUnit === 'years') tenure = tenure * 12;
+            const emiRes = calcEMI(loan, rate, tenure);
+            const schedule = amortizationSchedule(loan, rate, tenure, prepay);
+            $('loan-result').innerHTML = `
+    <div><strong>EMI</strong> ${fmtCurrency(emiRes.emi)}</div>
+    <div class="small">Total Payment ${fmtCurrency(emiRes.totalPayment)}</div>
+    <div class="small">Total Interest ${fmtCurrency(emiRes.totalInterest)}</div>
+  `;
+            show($('loan-result'));
+            $('summary-content').style.display = '';
+            $('summary-loan').style.display = '';
+            $('summary-deposit').style.display = 'none';
+            $('s-loan-emi').textContent = fmtCurrency(emiRes.emi);
+            $('s-loan-total').textContent = fmtCurrency(emiRes.totalPayment);
+            $('s-loan-interest').textContent = fmtCurrency(emiRes.totalInterest);
+            $('summary').textContent = 'Loan calculation complete.';
+            const tbody = $('schedule-table').querySelector('tbody');
+            tbody.innerHTML = '';
+            schedule.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td style="text-align:center">${row.month}</td>
+                    <td>${fmtCurrency(row.payment)}</td>
+                    <td>${fmtCurrency(row.principal)}</td>
+                    <td>${fmtCurrency(row.interest)}</td>
+                    <td>${fmtCurrency(row.balance)}</td>`;
+                tbody.appendChild(tr);
+            });
+            $('export-csv').dataset.schedule = JSON.stringify(schedule);
+            hide($('schedule-wrap'));
+        });
+        $('loan-reset').addEventListener('click', () => {
+            $('loan-amount').value = 500000;
+            $('loan-rate').value = 7.25;
+            $('loan-tenure').value = 240;
+            $('loan-tenure-unit').value = 'months';
+            $('loan-prepay').value = 0;
+            hide($('loan-result')); hide($('loan-error'));
+        });
+        $('toggle-schedule').addEventListener('click', () => {
+            const wrap = $('schedule-wrap');
+            if (wrap.style.display === 'none' || wrap.style.display === '') show(wrap);
+            else hide(wrap);
+        });
+        $('export-csv').addEventListener('click', () => {
+            const data = $('export-csv').dataset.schedule;
+            if (!data) { alert('No schedule available. Run a loan calculation first.'); return; }
+            const schedule = JSON.parse(data);
+            const header = ['Month', 'Payment', 'Principal', 'Interest', 'Balance'];
+            const rows = schedule.map(r => [r.month, r.payment.toFixed(2), r.principal.toFixed(2), r.interest.toFixed(2), r.balance.toFixed(2)]);
+            const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'amortization_schedule.csv';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        });
+
+        /* Initialize */
+        setActiveMode('deposit');
+    </script>
+</body>
+
+</html>
