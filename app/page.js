@@ -16,10 +16,8 @@ import BookConsultationForm from '../components/BookConsultationForm';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { auth } from '../lib/firebase';
 import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  sendEmailVerification, 
-  sendPasswordResetEmail,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
   sendSignInLinkToEmail,
   signOut as firebaseSignOut,
   onAuthStateChanged
@@ -1039,9 +1037,14 @@ export default function Page() {
 
   // Authentication & Dashboard States
   const [user, setUser] = useState(null);
+  const [authMethod, setAuthMethod] = useState('phone'); // 'phone' or 'email'
+  const [phoneCountryCode, setPhoneCountryCode] = useState('+91');
+  const [phoneInput, setPhoneInput] = useState('');
+  const [phoneStep, setPhoneStep] = useState('phone'); // 'phone' or 'otp'
+  const [otpCode, setOtpCode] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState(null);
   const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+  const [emailLinkSent, setEmailLinkSent] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authFeedback, setAuthFeedback] = useState({ type: null, message: '' });
   const [consultations, setConsultations] = useState([]);
@@ -1779,149 +1782,146 @@ export default function Page() {
     return "https://fin2ools.online/verify-email";
   };
 
-  const handleAuth = async (e) => {
-    e.preventDefault();
+  const getFormattedPhoneNumber = (code, rawNum) => {
+    let trimmed = (rawNum || '').trim();
+    if (trimmed.startsWith('+')) {
+      return trimmed.replace(/[^\d+]/g, '');
+    }
+    const cleanCode = (code || '+91').trim().startsWith('+') ? (code || '+91').trim() : `+${(code || '+91').trim()}`;
+    const cleanDigits = trimmed.replace(/\D/g, '').replace(/^0+/, '');
+    return `${cleanCode}${cleanDigits}`;
+  };
+
+  const setupRecaptcha = (containerId = 'recaptcha-container') => {
+    if (typeof window === 'undefined' || !auth) return null;
+    try {
+      if (window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier.clear();
+        } catch (_) {}
+        window.recaptchaVerifier = null;
+      }
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+        size: 'invisible',
+        callback: () => {},
+        'expired-callback': () => {
+          showToast('Verification Expired', 'reCAPTCHA expired. Please request a new OTP.', 'error');
+        }
+      });
+      return window.recaptchaVerifier;
+    } catch (err) {
+      console.error('setupRecaptcha error:', err);
+      return null;
+    }
+  };
+
+  const handleSendPhoneOtp = async (e) => {
+    if (e) e.preventDefault();
     setAuthFeedback({ type: null, message: '' });
 
-    if (!authEmail.trim() || !authPassword) {
-      showToast('Validation Error', 'Email and Password are required.', 'error');
-      setAuthFeedback({ type: 'error', message: 'Email and Password are required.' });
+    const rawNum = phoneInput.trim();
+    if (!rawNum) {
+      setAuthFeedback({ type: 'error', message: 'Please enter your mobile phone number.' });
+      showToast('Phone Number Required', 'Please enter your mobile phone number.', 'error');
       return;
     }
-    
-    setAuthLoading(true);
-    try {
-      if (authMode === 'login') {
-        const userCredential = await signInWithEmailAndPassword(auth, authEmail.trim(), authPassword);
-        const currentUser = userCredential.user;
 
-        if (!currentUser.emailVerified) {
-          showToast(
-            'Email Verification Pending',
-            `Welcome! A verification email was previously sent to ${currentUser.email}. If you didn't receive it, click 'Resend Verification'.`,
-            'info'
-          );
-          setAuthFeedback({
-            type: 'info',
-            message: `Signed in as ${currentUser.email}. Note: Your email is not verified yet. Check your inbox or click 'Resend Verification Email'.`
-          });
-        } else {
-          showToast('Welcome Back!', `Logged in successfully as ${currentUser.email}`, 'success');
-        }
-        handlePageChange('dashboard');
-      } else {
-        // Firebase User Registration
-        const userCredential = await createUserWithEmailAndPassword(auth, authEmail.trim(), authPassword);
-        const newUser = userCredential.user;
-
-        // CRITICAL: Explicitly send email verification to the registered user
-        try {
-          const actionCodeSettings = {
-            url: getAuthActionUrl(),
-            handleCodeInApp: true
-          };
-          await sendEmailVerification(newUser, actionCodeSettings);
-
-          setAuthFeedback({
-            type: 'success',
-            message: `Account created successfully! A verification link has been sent to ${authEmail.trim()}. Please check your inbox (and Spam/Junk folder) to verify.`
-          });
-          showToast(
-            'Verification Email Dispatched!',
-            `Account created! A verification link was sent to ${authEmail.trim()}. Please check your inbox & spam folder.`,
-            'success'
-          );
-        } catch (emailErr) {
-          console.warn('sendEmailVerification error:', emailErr);
-          setAuthFeedback({
-            type: 'info',
-            message: `Account created for ${authEmail.trim()}, but verification email could not be dispatched: ${emailErr.message}. You can resend it anytime.`
-          });
-          showToast(
-            'Account Created',
-            `User registered, but verification mail could not be dispatched: ${emailErr.message}`,
-            'info'
-          );
-        }
-
-        handlePageChange('dashboard');
-      }
-      setAuthPassword('');
-    } catch (err) {
-      console.error('Firebase Authentication error:', err);
-      let errorMsg = err.message;
-      if (err.code === 'auth/email-already-in-use') {
-        errorMsg = 'This email is already registered. Please switch to Sign In or click Forgot Password.';
-      } else if (err.code === 'auth/invalid-email') {
-        errorMsg = 'The email address is improperly formatted.';
-      } else if (err.code === 'auth/weak-password') {
-        errorMsg = 'Password is too weak. Please use at least 6 characters.';
-      } else if (err.code === 'auth/operation-not-allowed') {
-        errorMsg = 'Email/Password sign-in is not enabled in your Firebase Console. Go to Firebase Console > Authentication > Sign-in method, and enable "Email/Password".';
-      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        errorMsg = 'Invalid email or password. Please verify your credentials or click Forgot Password.';
-      } else if (err.code === 'auth/too-many-requests') {
-        errorMsg = 'Too many failed login attempts. Access is temporarily disabled. Please reset password or try again later.';
-      } else if (err.code === 'auth/network-request-failed') {
-        errorMsg = 'Network error connecting to Firebase. Please check your internet connection.';
-      }
-
-      setAuthFeedback({
-        type: 'error',
-        message: errorMsg
-      });
-      showToast('Authentication Failed', errorMsg, 'error');
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const handleResendVerification = async () => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-      showToast('Action Required', 'Please sign in first to resend your verification email.', 'info');
-      setAuthFeedback({
-        type: 'info',
-        message: 'Please sign in first so Firebase can verify your user session.'
-      });
+    const fullPhoneNumber = getFormattedPhoneNumber(phoneCountryCode, rawNum);
+    if (fullPhoneNumber.length < 10) {
+      setAuthFeedback({ type: 'error', message: 'Please enter a valid mobile number with country code.' });
+      showToast('Invalid Phone Number', 'Please enter a valid phone number.', 'error');
       return;
     }
 
     setAuthLoading(true);
     try {
-      const actionCodeSettings = {
-        url: getAuthActionUrl(),
-        handleCodeInApp: true
-      };
-      await sendEmailVerification(currentUser, actionCodeSettings);
-      showToast('Verification Email Sent!', `A fresh verification link was dispatched to ${currentUser.email}. Check inbox & spam folder.`, 'success');
+      const appVerifier = setupRecaptcha('recaptcha-container');
+      if (!appVerifier) {
+        throw new Error('Could not initialize reCAPTCHA verifier. Please refresh the page and try again.');
+      }
+
+      const confirmation = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
+      setConfirmationResult(confirmation);
+      setPhoneStep('otp');
+      setOtpCode('');
       setAuthFeedback({
         type: 'success',
-        message: `A fresh verification email was sent to ${currentUser.email}. Please check your inbox and spam folder.`
+        message: `OTP code sent to ${fullPhoneNumber}. Please enter the 6-digit code below to complete sign-in.`
       });
+      showToast('OTP Dispatched!', `6-digit code sent to ${fullPhoneNumber}`, 'success');
     } catch (err) {
-      console.error('Resend verification error:', err);
-      let errorMsg = err.message;
-      if (err.code === 'auth/too-many-requests') {
-        errorMsg = 'A verification email was recently sent. Please wait a minute before requesting another.';
+      console.error('signInWithPhoneNumber error:', err);
+      let errorMsg = err.message || 'Failed to send verification SMS.';
+      if (err.code === 'auth/invalid-phone-number') {
+        errorMsg = 'Invalid phone number format. Please ensure correct country code (e.g. +91) and 10-digit number.';
+      } else if (err.code === 'auth/too-many-requests') {
+        errorMsg = 'Too many attempts. SMS verification temporarily blocked. Please try again after a few minutes.';
+      } else if (err.code === 'auth/captcha-check-failed') {
+        errorMsg = 'reCAPTCHA check failed. Please refresh the page and retry.';
+      } else if (err.code === 'auth/quota-exceeded') {
+        errorMsg = 'Daily SMS quota exceeded. Please use Email Magic Link login.';
       }
-      showToast('Resend Failed', errorMsg, 'error');
-      setAuthFeedback({
-        type: 'error',
-        message: errorMsg
-      });
+      setAuthFeedback({ type: 'error', message: errorMsg });
+      showToast('SMS Error', errorMsg, 'error');
+      if (typeof window !== 'undefined' && window.recaptchaVerifier) {
+        try { window.recaptchaVerifier.clear(); } catch (_) {}
+        window.recaptchaVerifier = null;
+      }
     } finally {
       setAuthLoading(false);
     }
   };
 
-  const handleSendMagicLink = async () => {
-    if (!authEmail.trim()) {
-      showToast('Email Required', 'Please enter your email above to receive a passwordless Magic Sign-In Link.', 'info');
+  const handleVerifyPhoneOtp = async (e) => {
+    if (e) e.preventDefault();
+    setAuthFeedback({ type: null, message: '' });
+
+    const cleanOtp = otpCode.replace(/\D/g, '').trim();
+    if (cleanOtp.length !== 6) {
+      setAuthFeedback({ type: 'error', message: 'Please enter the complete 6-digit verification code.' });
+      showToast('Incomplete Code', 'Please enter the 6-digit code.', 'error');
+      return;
+    }
+
+    if (!confirmationResult) {
+      setAuthFeedback({ type: 'error', message: 'Verification session expired. Please request a new OTP.' });
+      setPhoneStep('phone');
+      return;
+    }
+
+    setAuthLoading(true);
+    try {
+      const userCredential = await confirmationResult.confirm(cleanOtp);
+      const currentUser = userCredential.user;
+      setUser(currentUser);
       setAuthFeedback({
-        type: 'info',
-        message: 'Please enter your email address in the field above to receive a passwordless magic sign-in link.'
+        type: 'success',
+        message: `Sign in successful! Welcome to Fin2ools.`
       });
+      showToast('Welcome!', `Authenticated as ${currentUser.phoneNumber || 'User'}`, 'success');
+      handlePageChange('dashboard');
+    } catch (err) {
+      console.error('confirmationResult.confirm error:', err);
+      let errorMsg = 'Invalid verification code. Please check your SMS and try again.';
+      if (err.code === 'auth/invalid-verification-code') {
+        errorMsg = 'The 6-digit code entered is incorrect. Please verify and try again.';
+      } else if (err.code === 'auth/code-expired') {
+        errorMsg = 'The verification code has expired. Please click "Resend Code".';
+      }
+      setAuthFeedback({ type: 'error', message: errorMsg });
+      showToast('Verification Failed', errorMsg, 'error');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSendEmailLink = async (e) => {
+    if (e) e.preventDefault();
+    setAuthFeedback({ type: null, message: '' });
+
+    if (!authEmail.trim() || !authEmail.includes('@')) {
+      setAuthFeedback({ type: 'error', message: 'Please enter a valid email address.' });
+      showToast('Email Required', 'Please enter a valid email address.', 'error');
       return;
     }
 
@@ -1935,62 +1935,22 @@ export default function Page() {
       if (typeof window !== 'undefined') {
         window.localStorage.setItem('emailForSignIn', authEmail.trim());
       }
-      showToast('Magic Link Dispatched!', `A passwordless sign-in link has been sent to ${authEmail.trim()}. Check your inbox & spam.`, 'success');
+      setEmailLinkSent(true);
       setAuthFeedback({
         type: 'success',
-        message: `Magic link dispatched to ${authEmail.trim()}! Check your inbox or spam folder to sign in with one click.`
+        message: `Secure passwordless magic link dispatched to ${authEmail.trim()}! Please check your inbox (and Spam/Junk folder) and click the link to sign in instantly.`
       });
+      showToast('Magic Link Dispatched!', `Sent to ${authEmail.trim()}. Check your inbox or spam.`, 'success');
     } catch (err) {
       console.error('sendSignInLinkToEmail error:', err);
-      let errorMsg = err.message;
+      let errorMsg = err.message || 'Failed to dispatch magic link.';
       if (err.code === 'auth/operation-not-allowed') {
         errorMsg = 'Email link sign-in is not enabled in Firebase Console. Please enable "Email link (passwordless sign-in)" under Authentication > Sign-in method.';
-      }
-      showToast('Magic Link Failed', errorMsg, 'error');
-      setAuthFeedback({
-        type: 'error',
-        message: errorMsg
-      });
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!authEmail.trim()) {
-      showToast('Email Required', 'Please enter your email address in the field above to reset your password.', 'info');
-      setAuthFeedback({
-        type: 'info',
-        message: 'Please enter your email address in the field above to receive a password reset link.'
-      });
-      return;
-    }
-
-    setAuthLoading(true);
-    try {
-      const actionCodeSettings = {
-        url: getAuthActionUrl(),
-        handleCodeInApp: true
-      };
-      await sendPasswordResetEmail(auth, authEmail.trim(), actionCodeSettings);
-      showToast('Password Reset Dispatched!', `Instructions to reset your password were sent to ${authEmail.trim()}. Check inbox & spam.`, 'success');
-      setAuthFeedback({
-        type: 'success',
-        message: `Password reset instructions have been sent to ${authEmail.trim()}. Check your inbox or spam folder.`
-      });
-    } catch (err) {
-      console.error('Password reset error:', err);
-      let errorMsg = err.message;
-      if (err.code === 'auth/user-not-found') {
-        errorMsg = 'No account found with this email. Please click "Register Team" to create an account.';
       } else if (err.code === 'auth/invalid-email') {
-        errorMsg = 'Please enter a valid email address.';
+        errorMsg = 'The email address is invalid.';
       }
-      showToast('Reset Failed', errorMsg, 'error');
-      setAuthFeedback({
-        type: 'error',
-        message: errorMsg
-      });
+      setAuthFeedback({ type: 'error', message: errorMsg });
+      showToast('Dispatch Failed', errorMsg, 'error');
     } finally {
       setAuthLoading(false);
     }
@@ -5554,7 +5514,7 @@ export default function Page() {
           </div>
         </section>
 
-        {/* PAGE 9: MEMBER LOGIN / SIGN UP */}
+        {/* PAGE 9: MEMBER LOGIN / PASSWORDLESS & OTP */}
         <section className={`page ${activePage === 'login' ? 'active' : ''}`}>
           <div className="auth-container">
             <div className="auth-card">
@@ -5562,22 +5522,32 @@ export default function Page() {
                 <span className="logo-icon"><ShieldCheck /></span>
                 <h2>Fin<span>2ools</span> Team</h2>
               </div>
-              <p className="auth-subtitle">Access your professional client inquiries, lead analytics, and scheduling logs.</p>
+              <p className="auth-subtitle">Secure, passwordless access with Mobile OTP or Email Magic Link.</p>
               
               <div className="auth-toggle">
                 <button 
                   type="button"
-                  className={`auth-toggle-btn ${authMode === 'login' ? 'active' : ''}`} 
-                  onClick={() => setAuthMode('login')}
+                  className={`auth-toggle-btn ${authMethod === 'phone' ? 'active' : ''}`} 
+                  onClick={() => {
+                    setAuthMethod('phone');
+                    setAuthFeedback({ type: null, message: '' });
+                  }}
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 >
-                  Sign In
+                  <Phone size={14} />
+                  <span>Mobile OTP (SMS)</span>
                 </button>
                 <button 
                   type="button"
-                  className={`auth-toggle-btn ${authMode === 'signup' ? 'active' : ''}`} 
-                  onClick={() => setAuthMode('signup')}
+                  className={`auth-toggle-btn ${authMethod === 'email' ? 'active' : ''}`} 
+                  onClick={() => {
+                    setAuthMethod('email');
+                    setAuthFeedback({ type: null, message: '' });
+                  }}
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 >
-                  Register Team
+                  <Mail size={14} />
+                  <span>Email Magic Link</span>
                 </button>
               </div>
 
@@ -5648,96 +5618,176 @@ export default function Page() {
                 </div>
               )}
 
-              <form onSubmit={handleAuth} className="auth-form">
-                <div className="form-group">
-                  <label htmlFor="auth-email">Team Email</label>
-                  <div className="auth-input-wrapper">
-                    <span className="auth-input-icon"><User size={16} /></span>
-                    <input 
-                      type="email" 
-                      id="auth-email" 
-                      placeholder="name@fin2ools.in" 
-                      value={authEmail} 
-                      onChange={(e) => setAuthEmail(e.target.value)} 
-                      required 
-                    />
-                  </div>
-                </div>
+              {/* 1. MOBILE NUMBER OTP FLOW */}
+              {authMethod === 'phone' && (
+                <div>
+                  {phoneStep === 'phone' ? (
+                    <form onSubmit={handleSendPhoneOtp} className="auth-form">
+                      <div className="form-group">
+                        <label htmlFor="auth-phone">Mobile Phone Number</label>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <div style={{ width: '85px', flexShrink: 0 }}>
+                            <input
+                              type="text"
+                              value={phoneCountryCode}
+                              onChange={(e) => setPhoneCountryCode(e.target.value)}
+                              placeholder="+91"
+                              aria-label="Country Code"
+                              style={{ textAlign: 'center', fontWeight: '600', padding: '12px 6px' }}
+                              required
+                            />
+                          </div>
+                          <div className="auth-input-wrapper" style={{ flex: 1 }}>
+                            <span className="auth-input-icon"><Phone size={16} /></span>
+                            <input 
+                              type="tel" 
+                              id="auth-phone" 
+                              placeholder="98765 43210" 
+                              value={phoneInput} 
+                              onChange={(e) => setPhoneInput(e.target.value)} 
+                              required 
+                              autoComplete="tel"
+                            />
+                          </div>
+                        </div>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: 1.4 }}>
+                          We will send a 6-digit SMS verification code to this mobile number.
+                        </p>
+                      </div>
 
-                <div className="form-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label htmlFor="auth-password" style={{ margin: 0 }}>Password</label>
-                    {authMode === 'login' && (
-                      <button 
-                        type="button" 
-                        onClick={handleForgotPassword}
-                        style={{ 
-                          background: 'none', 
-                          border: 'none', 
-                          color: 'var(--primary)', 
-                          fontSize: '0.75rem', 
-                          cursor: 'pointer', 
-                          padding: 0,
-                          textDecoration: 'underline' 
-                        }}
-                      >
-                        Forgot Password?
+                      {/* Invisible reCAPTCHA container required by Firebase */}
+                      <div id="recaptcha-container" style={{ margin: '8px 0' }}></div>
+
+                      <button type="submit" className="auth-submit-btn" disabled={authLoading}>
+                        {authLoading ? (
+                          <span className="flex-center-y justify-center gap-2">
+                            <RefreshCw className="animate-spin" size={16} style={{ display: 'inline-block', marginRight: '6px' }} />
+                            <span>Sending OTP...</span>
+                          </span>
+                        ) : (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <span>Send Verification Code</span>
+                            <ArrowRight size={16} />
+                          </span>
+                        )}
                       </button>
-                    )}
-                  </div>
-                  <div className="auth-input-wrapper">
-                    <span className="auth-input-icon"><Lock size={16} /></span>
-                    <input 
-                      type="password" 
-                      id="auth-password" 
-                      placeholder="••••••••" 
-                      value={authPassword} 
-                      onChange={(e) => setAuthPassword(e.target.value)} 
-                      required 
-                    />
-                  </div>
-                </div>
-
-                <button type="submit" className="auth-submit-btn" disabled={authLoading}>
-                  {authLoading ? (
-                    <span className="flex-center-y justify-center gap-2">
-                      <RefreshCw className="animate-spin" size={16} style={{ display: 'inline-block', marginRight: '6px' }} />
-                      <span>{authMode === 'login' ? 'Signing in...' : 'Registering...'}</span>
-                    </span>
+                    </form>
                   ) : (
-                    <span>{authMode === 'login' ? 'Sign In to Dashboard' : 'Create Team Account & Send OTP Link'}</span>
+                    <form onSubmit={handleVerifyPhoneOtp} className="auth-form">
+                      <div className="form-group">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <label htmlFor="auth-otp" style={{ margin: 0 }}>Enter 6-Digit Code</label>
+                          <button 
+                            type="button" 
+                            onClick={() => { setPhoneStep('phone'); setOtpCode(''); setAuthFeedback({ type: null, message: '' }); }}
+                            style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                          >
+                            Change Number
+                          </button>
+                        </div>
+                        <div className="auth-input-wrapper">
+                          <span className="auth-input-icon"><ShieldCheck size={16} /></span>
+                          <input 
+                            type="text" 
+                            id="auth-otp" 
+                            placeholder="123456" 
+                            value={otpCode} 
+                            onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))} 
+                            maxLength={6}
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            style={{ fontSize: '1.25rem', letterSpacing: '4px', textAlign: 'center', fontWeight: 'bold' }}
+                            required 
+                            autoFocus
+                          />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                            Sent to <strong>{phoneCountryCode} {phoneInput}</strong>
+                          </span>
+                          <button 
+                            type="button" 
+                            onClick={handleSendPhoneOtp}
+                            disabled={authLoading}
+                            style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                          >
+                            Resend OTP
+                          </button>
+                        </div>
+                      </div>
+
+                      <button type="submit" className="auth-submit-btn" disabled={authLoading || otpCode.length !== 6}>
+                        {authLoading ? (
+                          <span className="flex-center-y justify-center gap-2">
+                            <RefreshCw className="animate-spin" size={16} style={{ display: 'inline-block', marginRight: '6px' }} />
+                            <span>Verifying Code...</span>
+                          </span>
+                        ) : (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <span>Verify &amp; Sign In</span>
+                            <Check size={16} />
+                          </span>
+                        )}
+                      </button>
+                    </form>
                   )}
-                </button>
+                </div>
+              )}
 
-                {authMode === 'login' && (
-                  <div style={{ marginTop: '12px', textAlign: 'center' }}>
-                    <button 
-                      type="button" 
-                      onClick={handleSendMagicLink}
-                      disabled={authLoading}
-                      style={{
-                        background: 'none',
-                        border: '1px dashed var(--border-color, #cbd5e1)',
-                        borderRadius: '6px',
-                        padding: '8px 14px',
-                        width: '100%',
-                        color: 'var(--text-secondary, #475569)',
-                        fontSize: '0.8rem',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      ✉️ Sign In with Passwordless Magic Link
-                    </button>
+              {/* 2. EMAIL MAGIC LINK (PASSWORDLESS) FLOW */}
+              {authMethod === 'email' && (
+                <form onSubmit={handleSendEmailLink} className="auth-form">
+                  <div className="form-group">
+                    <label htmlFor="auth-email">Work or Personal Email</label>
+                    <div className="auth-input-wrapper">
+                      <span className="auth-input-icon"><Mail size={16} /></span>
+                      <input 
+                        type="email" 
+                        id="auth-email" 
+                        placeholder="name@company.com" 
+                        value={authEmail} 
+                        onChange={(e) => setAuthEmail(e.target.value)} 
+                        required 
+                      />
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: 1.4 }}>
+                      We will email you a secure, single-use sign-in link. One click logs you into your dashboard.
+                    </p>
                   </div>
-                )}
 
-                {authMode === 'signup' && (
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '12px', textAlign: 'center' }}>
-                    * An automated verification link will be sent to your email. Check both your Inbox and Spam/Junk folder.
-                  </p>
-                )}
-              </form>
+                  <button type="submit" className="auth-submit-btn" disabled={authLoading}>
+                    {authLoading ? (
+                      <span className="flex-center-y justify-center gap-2">
+                        <RefreshCw className="animate-spin" size={16} style={{ display: 'inline-block', marginRight: '6px' }} />
+                        <span>Dispatching Link...</span>
+                      </span>
+                    ) : (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <span>Send Magic Sign-In Link</span>
+                        <Send size={16} />
+                      </span>
+                    )}
+                  </button>
+
+                  {emailLinkSent && (
+                    <div style={{ marginTop: '16px', padding: '14px', backgroundColor: 'var(--bg-surface-alt)', borderRadius: '8px', border: '1px solid var(--border)', textAlign: 'center' }}>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: '4px', fontWeight: 600 }}>
+                        ✉️ Magic link dispatched!
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.4, margin: 0 }}>
+                        Click the sign-in link sent to <strong>{authEmail}</strong> on this device. Remember to check your Spam folder.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setEmailLinkSent(false)}
+                        style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', marginTop: '10px', cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        Send to a different email
+                      </button>
+                    </div>
+                  )}
+                </form>
+              )}
             </div>
           </div>
         </section>
@@ -5747,7 +5797,7 @@ export default function Page() {
           <ProtectedRoute enabled={activePage === 'dashboard'} onRedirect={() => handlePageChange('login')} redirectTo="/#login">
             <div className="dashboard-wrapper">
               {/* UNVERIFIED EMAIL NOTIFICATION BANNER */}
-              {user && !user.emailVerified && (
+              {user && user.email && !user.emailVerified && (
                 <div 
                   className="unverified-email-banner" 
                   style={{
@@ -5793,7 +5843,7 @@ export default function Page() {
                 <div className="db-header-title">
                   <span className="db-badge">Active Session</span>
                   <h1>Team Portal &amp; Analytics</h1>
-                  <p>Welcome back, <strong>{user?.email || 'Team Member'}</strong>. Here is your dashboard overview.</p>
+                  <p>Welcome back, <strong>{user?.phoneNumber || user?.email || 'Team Member'}</strong>. Here is your dashboard overview.</p>
                 </div>
                 <div className="db-actions">
                   <button className="btn-secondary" onClick={fetchConsultationsData} disabled={loadingConsultations} style={{ display: 'inline-flex', alignItems: 'center' }}>
