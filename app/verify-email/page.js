@@ -46,10 +46,10 @@ function VerifyEmailContent() {
             window.localStorage.removeItem('emailForSignIn');
           }
           setStatus('success');
-          setMessage(`Signed in successfully as ${email}! Redirecting to dashboard...`);
+          setMessage(`Signed in successfully as ${email}! Entering Fin2ools portal...`);
           setTimeout(() => {
-            router.push('/#dashboard');
-          }, 2000);
+            router.push('/#home');
+          }, 1500);
           return;
         } catch (err) {
           console.error('signInWithEmailLink error:', err);
@@ -98,10 +98,10 @@ function VerifyEmailContent() {
       const href = typeof window !== 'undefined' ? window.location.href : '';
       await signInWithEmailLink(auth, emailInput.trim(), href);
       setStatus('success');
-      setMessage(`Signed in successfully as ${emailInput.trim()}! Redirecting to dashboard...`);
+      setMessage(`Signed in successfully as ${emailInput.trim()}! Entering Fin2ools portal...`);
       setTimeout(() => {
-        router.push('/#dashboard');
-      }, 2000);
+        router.push('/#home');
+      }, 1500);
     } catch (err) {
       console.error('Manual email sign-in error:', err);
       setStatus('error');

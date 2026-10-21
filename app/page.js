@@ -1037,6 +1037,7 @@ export default function Page() {
 
   // Authentication & Dashboard States
   const [user, setUser] = useState(null);
+  const [authChecking, setAuthChecking] = useState(true);
   const [authMethod, setAuthMethod] = useState('phone'); // 'phone' or 'email'
   const [phoneCountryCode, setPhoneCountryCode] = useState('+91');
   const [phoneInput, setPhoneInput] = useState('');
@@ -1449,12 +1450,15 @@ export default function Page() {
     if (auth) {
       unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
         setUser(currentUser || null);
+        setAuthChecking(false);
         if (currentUser) {
           fetchConsultationsData();
         } else {
           setConsultations([]);
         }
       });
+    } else {
+      setAuthChecking(false);
     }
 
     return () => {
@@ -1899,7 +1903,7 @@ export default function Page() {
         message: `Sign in successful! Welcome to Fin2ools.`
       });
       showToast('Welcome!', `Authenticated as ${currentUser.phoneNumber || 'User'}`, 'success');
-      handlePageChange('dashboard');
+      handlePageChange('home');
     } catch (err) {
       console.error('confirmationResult.confirm error:', err);
       let errorMsg = 'Invalid verification code. Please check your SMS and try again.';
@@ -1958,9 +1962,17 @@ export default function Page() {
 
   const handleSignOut = async () => {
     try {
-      await firebaseSignOut(auth);
+      if (auth) {
+        await firebaseSignOut(auth);
+      }
       setUser(null);
-      showToast('Logged Out', 'You have been signed out successfully.', 'info');
+      setConfirmationResult(null);
+      setPhoneStep('phone');
+      setOtpCode('');
+      setPhoneInput('');
+      setEmailLinkSent(false);
+      setAuthFeedback({ type: null, message: '' });
+      showToast('Website Locked', 'You have been signed out. Security firewall is active.', 'info');
       handlePageChange('home');
     } catch (err) {
       console.error('Sign out error:', err);
@@ -3319,6 +3331,484 @@ export default function Page() {
   const statPendingCount = statutoryTrackerRows.filter(r => r.complianceStatus === 'Pending').length;
   const statDelayedCount = statutoryTrackerRows.filter(r => r.complianceStatus === 'Delayed Filing').length;
 
+  // 1. Initial Session Verification Splash
+  if (authChecking) {
+    return (
+      <div 
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'radial-gradient(ellipse at top, #1e293b 0%, #0f172a 100%)',
+          color: '#f8fafc',
+          padding: '2rem',
+          fontFamily: 'var(--font-body, system-ui, sans-serif)'
+        }}
+      >
+        <div style={{ textAlign: 'center', maxWidth: '420px', width: '100%' }}>
+          <img 
+            src="/fin2ools.png" 
+            alt="Fin2ools" 
+            width={64} 
+            height={64} 
+            style={{ borderRadius: '14px', marginBottom: '1.25rem', display: 'inline-block' }}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#60a5fa', fontWeight: 600, fontSize: '1rem', marginBottom: '0.5rem' }}>
+            <RefreshCw className="animate-spin" size={18} />
+            <span>Fin2ools Access Firewall</span>
+          </div>
+          <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>
+            Verifying statutory security credentials &amp; active session...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. FIREWALL GATEKEEPER: Strict OTP verification required to enter the website
+  if (!user) {
+    return (
+      <div 
+        className="firewall-container"
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          background: 'radial-gradient(ellipse at top, #1e293b 0%, #0f172a 100%)',
+          color: '#f8fafc',
+          padding: '2rem 1rem',
+          fontFamily: 'var(--font-body, system-ui, sans-serif)'
+        }}
+      >
+        {/* Invisible reCAPTCHA container for Firebase Phone OTP verification */}
+        <div id="recaptcha-container"></div>
+
+        {/* Top Firewall Header */}
+        <header style={{ maxWidth: '1080px', width: '100%', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.5rem 2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img 
+              src="/fin2ools.png" 
+              alt="Fin2ools Logo" 
+              width={46} 
+              height={46} 
+              style={{ borderRadius: '12px' }} 
+            />
+            <div>
+              <span style={{ fontWeight: 800, fontSize: '1.35rem', letterSpacing: '-0.5px', color: '#ffffff' }}>Fin<span style={{ color: '#60a5fa' }}>2ools</span></span>
+              <span style={{ display: 'block', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: '#94a3b8', fontWeight: 700 }}>Security Firewall</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.35)', color: '#fca5a5', padding: '6px 14px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600 }}>
+            <Lock size={14} />
+            <span>Portal Locked — OTP Verification Required</span>
+          </div>
+        </header>
+
+        {/* Central Authentication Gatekeeper Card */}
+        <main style={{ maxWidth: '460px', width: '100%', margin: '0 auto', background: 'rgba(30, 41, 59, 0.92)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255, 255, 255, 0.12)', borderRadius: '24px', padding: '2.25rem 2rem', boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.6)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+            <div style={{ width: '56px', height: '56px', background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.35)', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#60a5fa' }}>
+              <ShieldCheck size={28} />
+            </div>
+            <h1 style={{ fontSize: '1.45rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.5rem', letterSpacing: '-0.4px' }}>
+              Statutory Security Firewall
+            </h1>
+            <p style={{ fontSize: '0.85rem', color: '#94a3b8', lineHeight: 1.5, margin: 0 }}>
+              Verify your identity via Mobile OTP or Email Link to unlock Fin2ools compliance portals, calculators, and tools.
+            </p>
+          </div>
+
+          {/* TWO-METHOD TABS */}
+          <div style={{ display: 'flex', background: 'rgba(15, 23, 42, 0.6)', padding: '4px', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMethod('phone');
+                setAuthFeedback({ type: null, message: '' });
+              }}
+              style={{
+                flex: 1,
+                padding: '10px 14px',
+                borderRadius: '8px',
+                border: 'none',
+                background: authMethod === 'phone' ? 'var(--primary, #1a73e8)' : 'transparent',
+                color: authMethod === 'phone' ? '#ffffff' : '#94a3b8',
+                fontWeight: authMethod === 'phone' ? 600 : 500,
+                fontSize: '0.82rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Phone size={14} />
+              <span>Mobile OTP (SMS)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMethod('email');
+                setAuthFeedback({ type: null, message: '' });
+              }}
+              style={{
+                flex: 1,
+                padding: '10px 14px',
+                borderRadius: '8px',
+                border: 'none',
+                background: authMethod === 'email' ? 'var(--primary, #1a73e8)' : 'transparent',
+                color: authMethod === 'email' ? '#ffffff' : '#94a3b8',
+                fontWeight: authMethod === 'email' ? 600 : 500,
+                fontSize: '0.82rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Mail size={14} />
+              <span>Email Magic Link</span>
+            </button>
+          </div>
+
+          {/* FEEDBACK BANNERS */}
+          {authFeedback.type === 'success' && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', padding: '0.85rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', marginBottom: '1.25rem', fontSize: '0.82rem', lineHeight: 1.45 }}>
+              <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+              <span>{authFeedback.message}</span>
+            </div>
+          )}
+
+          {authFeedback.type === 'error' && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', padding: '0.85rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.3)', marginBottom: '1.25rem', fontSize: '0.82rem', lineHeight: 1.45 }}>
+              <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+              <span>{authFeedback.message}</span>
+            </div>
+          )}
+
+          {/* 1. MOBILE PHONE OTP (SMS) */}
+          {authMethod === 'phone' && (
+            <div>
+              {phoneStep === 'phone' ? (
+                <form onSubmit={handleSendPhoneOtp}>
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <label htmlFor="gatekeeper-phone" style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e2e8f0', marginBottom: '6px' }}>
+                      Mobile Phone Number
+                    </label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ width: '90px', flexShrink: 0 }}>
+                        <select
+                          value={phoneCountryCode}
+                          onChange={(e) => setPhoneCountryCode(e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '11px 8px',
+                            background: '#0f172a',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
+                            borderRadius: '10px',
+                            color: '#ffffff',
+                            fontSize: '0.85rem',
+                            outline: 'none'
+                          }}
+                        >
+                          <option value="+91">🇮🇳 +91</option>
+                          <option value="+1">🇺🇸 +1</option>
+                          <option value="+44">🇬🇧 +44</option>
+                          <option value="+971">🇦🇪 +971</option>
+                          <option value="+65">🇸🇬 +65</option>
+                          <option value="+61">🇦🇺 +61</option>
+                        </select>
+                      </div>
+                      <div style={{ flex: 1, position: 'relative' }}>
+                        <input
+                          type="tel"
+                          id="gatekeeper-phone"
+                          placeholder="9876543210"
+                          value={phoneInput}
+                          onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                          maxLength={10}
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '11px 14px',
+                            background: '#0f172a',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
+                            borderRadius: '10px',
+                            color: '#ffffff',
+                            fontSize: '0.9rem',
+                            letterSpacing: '1px',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '6px', lineHeight: 1.4 }}>
+                      We will send a 6-digit statutory verification OTP via Firebase SMS.
+                    </p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={authLoading || phoneInput.length < 10}
+                    style={{
+                      width: '100%',
+                      padding: '12px 18px',
+                      background: 'var(--primary, #1a73e8)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '10px',
+                      fontWeight: 600,
+                      fontSize: '0.88rem',
+                      cursor: authLoading || phoneInput.length < 10 ? 'not-allowed' : 'pointer',
+                      opacity: authLoading || phoneInput.length < 10 ? 0.6 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 14px rgba(26, 115, 232, 0.35)',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {authLoading ? (
+                      <>
+                        <RefreshCw className="animate-spin" size={16} />
+                        <span>Sending SMS Code...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Send Verification Code</span>
+                        <ArrowRight size={16} />
+                      </>
+                    )}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyPhoneOtp}>
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <label htmlFor="gatekeeper-otp" style={{ fontSize: '0.8rem', fontWeight: 600, color: '#e2e8f0' }}>
+                        Enter 6-Digit OTP Code
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhoneStep('phone');
+                          setOtpCode('');
+                          setAuthFeedback({ type: null, message: '' });
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.72rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                      >
+                        Change Number
+                      </button>
+                    </div>
+
+                    <input
+                      type="text"
+                      id="gatekeeper-otp"
+                      placeholder="123456"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      maxLength={6}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      required
+                      autoFocus
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: '#0f172a',
+                        border: '1px solid rgba(96, 165, 250, 0.4)',
+                        borderRadius: '10px',
+                        color: '#ffffff',
+                        fontSize: '1.35rem',
+                        letterSpacing: '8px',
+                        textAlign: 'center',
+                        fontWeight: 700,
+                        outline: 'none'
+                      }}
+                    />
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                      <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                        Sent to <strong>{phoneCountryCode} {phoneInput}</strong>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleSendPhoneOtp}
+                        disabled={authLoading}
+                        style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.72rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                      >
+                        Resend OTP
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={authLoading || otpCode.length !== 6}
+                    style={{
+                      width: '100%',
+                      padding: '12px 18px',
+                      background: 'var(--primary, #1a73e8)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '10px',
+                      fontWeight: 600,
+                      fontSize: '0.88rem',
+                      cursor: authLoading || otpCode.length !== 6 ? 'not-allowed' : 'pointer',
+                      opacity: authLoading || otpCode.length !== 6 ? 0.6 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 14px rgba(26, 115, 232, 0.35)',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {authLoading ? (
+                      <>
+                        <RefreshCw className="animate-spin" size={16} />
+                        <span>Verifying Code...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Verify &amp; Enter Website</span>
+                        <Check size={16} />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* 2. EMAIL MAGIC LINK (PASSWORDLESS) */}
+          {authMethod === 'email' && (
+            <form onSubmit={handleSendEmailLink}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label htmlFor="gatekeeper-email" style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e2e8f0', marginBottom: '6px' }}>
+                  Work or Personal Email
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="email"
+                    id="gatekeeper-email"
+                    placeholder="name@company.com"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '11px 14px',
+                      background: '#0f172a',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      borderRadius: '10px',
+                      color: '#ffffff',
+                      fontSize: '0.9rem',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+                <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '6px', lineHeight: 1.4 }}>
+                  We will email you a secure, single-use sign-in link. One click unlocks the website.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={authLoading}
+                style={{
+                  width: '100%',
+                  padding: '12px 18px',
+                  background: 'var(--primary, #1a73e8)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: '0.88rem',
+                  cursor: authLoading ? 'not-allowed' : 'pointer',
+                  opacity: authLoading ? 0.6 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(26, 115, 232, 0.35)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {authLoading ? (
+                  <>
+                    <RefreshCw className="animate-spin" size={16} />
+                    <span>Dispatching Link...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Send Magic Sign-In Link</span>
+                    <Send size={16} />
+                  </>
+                )}
+              </button>
+
+              {emailLinkSent && (
+                <div style={{ marginTop: '16px', padding: '14px', backgroundColor: 'rgba(15, 23, 42, 0.6)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'center' }}>
+                  <p style={{ fontSize: '0.85rem', color: '#ffffff', marginBottom: '4px', fontWeight: 600 }}>
+                    ✉️ Magic link dispatched!
+                  </p>
+                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.4, margin: 0 }}>
+                    Click the sign-in link sent to <strong>{authEmail}</strong> on this device. Remember to check your Spam folder.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setEmailLinkSent(false)}
+                    style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.75rem', marginTop: '10px', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    Send to a different email
+                  </button>
+                </div>
+              )}
+            </form>
+          )}
+
+          {/* Compliance & Security Badge */}
+          <div style={{ marginTop: '1.75rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)', textAlign: 'center' }}>
+            <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <Lock size={11} /> End-to-end statutory encryption &bull; DPDP Act compliant
+            </span>
+          </div>
+        </main>
+
+        {/* Bottom Footer Note */}
+        <footer style={{ textAlign: 'center', padding: '1.5rem 0 0.5rem', fontSize: '0.75rem', color: '#64748b' }}>
+          &copy; {new Date().getFullYear()} Fin2ools. Compliant with IT Act 1961 &amp; Digital Personal Data Protection Act.
+        </footer>
+
+        {/* CUSTOM TOAST NOTIFICATIONS */}
+        <div id="toast-container" className="toast-container">
+          {toasts.map(t => (
+            <div key={t.id} className={`toast toast-${t.type}`}>
+              <div className="toast-icon">
+                {t.type === 'success' ? <CheckCircle2 /> : t.type === 'error' ? <AlertTriangle /> : <Info />}
+              </div>
+              <div className="toast-content">
+                <div className="toast-title">{t.title}</div>
+                <div className="toast-message">{t.message}</div>
+              </div>
+              <button className="toast-close" onClick={() => removeToast(t.id)}><X size={14} /></button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* HEADER / NAVIGATION */}
@@ -3463,27 +3953,22 @@ export default function Page() {
               </span>
             </button>
             
-            {user ? (
-              <button className="nav-cta btn-signout" onClick={handleSignOut} style={{ backgroundColor: 'var(--danger)', boxShadow: '0 4px 10px rgba(239, 68, 68, 0.2)' }}>
-                <LogOut size={16} />
-                <span>Sign Out</span>
-              </button>
-            ) : (
-              <>
-                <button className="nav-btn login-nav-btn" onClick={() => handlePageChange('login')}>
-                  <LogIn size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                  Member Login
-                </button>
-                <button 
-                  className="nav-cta" 
-                  onClick={() => handlePageChange('consultation')}
-                  style={{ backgroundColor: 'var(--primary)', color: '#fff' }}
-                >
-                  <CalendarClock size={16} />
-                  <span>Book Consultation</span>
-                </button>
-              </>
+            {user && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'var(--bg-surface-alt, rgba(255,255,255,0.08))', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '0.78rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
+                <span>{user.phoneNumber || user.email || 'Verified User'}</span>
+              </div>
             )}
+
+            <button 
+              className="nav-cta btn-signout" 
+              onClick={handleSignOut} 
+              style={{ backgroundColor: 'var(--danger)', boxShadow: '0 4px 10px rgba(239, 68, 68, 0.2)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              title="Lock Website and Sign Out"
+            >
+              <LogOut size={16} />
+              <span>Lock &amp; Exit</span>
+            </button>
 
             {/* Mobile Menu Toggle */}
             <button className="mobile-toggle" onClick={handleToggleMobileMenu}>
@@ -3520,20 +4005,17 @@ export default function Page() {
             Connect
           </button>
 
-          {user ? (
-            <>
-              <button className={`mobile-nav-btn ${activePage === 'dashboard' ? 'active' : ''}`} onClick={() => { handlePageChange('dashboard'); handleToggleMobileMenu(); }}>Team Dashboard</button>
-              <button className="mobile-nav-cta" onClick={() => { handleSignOut(); handleToggleMobileMenu(); }} style={{ backgroundColor: 'var(--danger)' }}>Sign Out</button>
-            </>
-          ) : (
-            <>
-              <button className={`mobile-nav-btn ${activePage === 'login' ? 'active' : ''}`} onClick={() => { handlePageChange('login'); handleToggleMobileMenu(); }}>Member Login</button>
-              <button className="mobile-nav-cta" onClick={() => { handlePageChange('consultation'); handleToggleMobileMenu(); }} style={{ backgroundColor: 'var(--primary)', color: '#fff' }}>
-                <CalendarClock size={16} style={{ marginRight: '6px' }} />
-                Book Consultation
-              </button>
-            </>
+          {user && (
+            <div style={{ padding: '8px 16px', margin: '8px 0', background: 'var(--bg-surface-alt)', borderRadius: '8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
+              <span><strong>Verified:</strong> {user.phoneNumber || user.email}</span>
+            </div>
           )}
+          <button className={`mobile-nav-btn ${activePage === 'dashboard' ? 'active' : ''}`} onClick={() => { handlePageChange('dashboard'); handleToggleMobileMenu(); }}>Team Dashboard</button>
+          <button className="mobile-nav-cta" onClick={() => { handleSignOut(); handleToggleMobileMenu(); }} style={{ backgroundColor: 'var(--danger)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <LogOut size={16} />
+            <span>Lock &amp; Exit Website</span>
+          </button>
         </div>
       </div>
 
@@ -5523,6 +6005,22 @@ export default function Page() {
                 <h2>Fin<span>2ools</span> Team</h2>
               </div>
               <p className="auth-subtitle">Secure, passwordless access with Mobile OTP or Email Magic Link.</p>
+              
+              {user && (
+                <div style={{ textAlign: 'center', padding: '1rem', margin: '1rem 0', background: 'var(--bg-surface-alt)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                  <p style={{ margin: '0 0 10px', fontSize: '0.88rem', color: 'var(--text-primary)' }}>
+                    ✅ Currently Authenticated as <strong>{user.phoneNumber || user.email}</strong>
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                    <button type="button" onClick={() => handlePageChange('home')} style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 14px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+                      Go to Homepage
+                    </button>
+                    <button type="button" onClick={handleSignOut} style={{ background: 'var(--danger)', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 14px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+                      Lock &amp; Exit
+                    </button>
+                  </div>
+                </div>
+              )}
               
               <div className="auth-toggle">
                 <button 
