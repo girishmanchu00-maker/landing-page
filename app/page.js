@@ -1770,6 +1770,15 @@ export default function Page() {
     }
   };
 
+  const getAuthActionUrl = () => {
+    if (typeof window !== 'undefined' && window.location.origin) {
+      if (!window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1')) {
+        return `${window.location.origin}/verify-email`;
+      }
+    }
+    return "https://fin2ools.online/verify-email";
+  };
+
   const handleAuth = async (e) => {
     e.preventDefault();
     setAuthFeedback({ type: null, message: '' });
@@ -1808,7 +1817,7 @@ export default function Page() {
         // CRITICAL: Explicitly send email verification to the registered user
         try {
           const actionCodeSettings = {
-            url: "https://landing-page-jcg5.vercel.app/verify-email",
+            url: getAuthActionUrl(),
             handleCodeInApp: true
           };
           await sendEmailVerification(newUser, actionCodeSettings);
@@ -1881,7 +1890,7 @@ export default function Page() {
     setAuthLoading(true);
     try {
       const actionCodeSettings = {
-        url: "https://landing-page-jcg5.vercel.app/verify-email",
+        url: getAuthActionUrl(),
         handleCodeInApp: true
       };
       await sendEmailVerification(currentUser, actionCodeSettings);
@@ -1919,7 +1928,7 @@ export default function Page() {
     setAuthLoading(true);
     try {
       const actionCodeSettings = {
-        url: "https://landing-page-jcg5.vercel.app/verify-email",
+        url: getAuthActionUrl(),
         handleCodeInApp: true
       };
       await sendSignInLinkToEmail(auth, authEmail.trim(), actionCodeSettings);
@@ -1960,7 +1969,7 @@ export default function Page() {
     setAuthLoading(true);
     try {
       const actionCodeSettings = {
-        url: "https://landing-page-jcg5.vercel.app/verify-email",
+        url: getAuthActionUrl(),
         handleCodeInApp: true
       };
       await sendPasswordResetEmail(auth, authEmail.trim(), actionCodeSettings);
