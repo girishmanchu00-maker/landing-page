@@ -12,12 +12,17 @@ import { ShieldCheck, Loader2 } from 'lucide-react';
  * Displays a clean "Verifying session..." spinner during authentication resolution
  * and redirects unauthenticated users to the login route.
  */
-export default function ProtectedRoute({ children, onRedirect, redirectTo = '/login' }) {
+export default function ProtectedRoute({ children, onRedirect, redirectTo = '/login', enabled = true }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [authenticatedUser, setAuthenticatedUser] = useState(null);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
     if (!auth) {
       setLoading(false);
       if (onRedirect) {
@@ -56,7 +61,12 @@ export default function ProtectedRoute({ children, onRedirect, redirectTo = '/lo
     });
 
     return () => unsubscribe();
-  }, [router, onRedirect, redirectTo]);
+  }, [router, onRedirect, redirectTo, enabled]);
+
+  // If protection is disabled (e.g. inactive tab), render immediately
+  if (!enabled) {
+    return <>{children}</>;
+  }
 
   // Clean "Verifying session..." loading spinner during auth resolution
   if (loading) {
@@ -118,7 +128,7 @@ export default function ProtectedRoute({ children, onRedirect, redirectTo = '/lo
             lineHeight: 1.5
           }}
         >
-          Checking your authentication status and permissions securely with Fintezy.
+          Checking your authentication status and permissions securely with Fin2ools.
         </p>
       </div>
     );

@@ -1,7 +1,7 @@
 {
-  "name": "fintezy-landing-page",
+  "name": "fin2ools-landing-page",
   "version": "1.0.0",
-  "description": "Fintezy CA Professional Resource Portal",
+  "description": "Fin2ools CA Professional Resource Portal",
   "main": "index.html",
   "scripts": {
     "dev": "next dev",

@@ -64,7 +64,7 @@ function VerifyEmailContent() {
         try {
           await applyActionCode(auth, oobCode);
           setStatus('success');
-          setMessage('Your email address has been successfully verified! You now have full access to Fintezy.');
+          setMessage('Your email address has been successfully verified! You now have full access to Fin2ools.');
           return;
         } catch (err) {
           console.error('applyActionCode error:', err);

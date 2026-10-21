@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * FINTEZY GOOGLE APPS SCRIPT WEBHOOK (ROW-BY-ROW / LINE-BY-LINE VERSION)
+ * FIN2OOLS GOOGLE APPS SCRIPT WEBHOOK (ROW-BY-ROW / LINE-BY-LINE VERSION)
  * ============================================================================
  * 
  * Features:
@@ -55,11 +55,11 @@ function doPost(e) {
 
     try {
       if (formType === "connect") {
-        subject = "Welcome to the Fintezy Network!";
-        body = `Hi ${name},\n\nWelcome to the Fintezy family! We have received your request to join as a ${selection}.\n\nBest Regards,\nThe Fintezy Team`;
+        subject = "Welcome to the Fin2ools Network!";
+        body = `Hi ${name},\n\nWelcome to the Fin2ools family! We have received your request to join as a ${selection}.\n\nBest Regards,\nThe Fin2ools Team`;
       } else {
         subject = "Consultation Request Received";
-        body = `Hi ${name},\n\nThank you for booking a consultation for: ${selection}. Our team will review your details and contact you at ${phone}.\n\nBest Regards,\nThe Fintezy Team`;
+        body = `Hi ${name},\n\nThank you for booking a consultation for: ${selection}. Our team will review your details and contact you at ${phone}.\n\nBest Regards,\nThe Fin2ools Team`;
       }
       
       MailApp.sendEmail({ to: email, subject: subject, body: body });

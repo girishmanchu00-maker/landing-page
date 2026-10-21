@@ -1172,7 +1172,7 @@ export default function Page() {
   const [bookmarkedIds, setBookmarkedIds] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem('fintezy_library_bookmarks');
+        const stored = localStorage.getItem('fin2ools_library_bookmarks') || localStorage.getItem('fin2ool_library_bookmarks') || localStorage.getItem('fintezy_library_bookmarks');
         return stored ? JSON.parse(stored) : ['gst-gstr-2b', 'gst-gstr-3b', 'dt-itr-1', 'icai-sa-compendium'];
       } catch (e) {
         return ['gst-gstr-2b', 'gst-gstr-3b', 'dt-itr-1', 'icai-sa-compendium'];
@@ -1193,7 +1193,7 @@ export default function Page() {
         showToast('Resource Pinned', `Added ${title} to your Quick Bookmarks!`, 'success');
       }
       try {
-        localStorage.setItem('fintezy_library_bookmarks', JSON.stringify(next));
+        localStorage.setItem('fin2ools_library_bookmarks', JSON.stringify(next));
       } catch (e) {}
       return next;
     });
@@ -1467,7 +1467,12 @@ export default function Page() {
     const loadedProgress = {};
     checklistItems.forEach((_, ci) => {
       const listId = `checklist-${ci}`;
-      loadedProgress[ci] = JSON.parse(localStorage.getItem(listId)) || {};
+      try {
+        const stored = localStorage.getItem(listId);
+        loadedProgress[ci] = stored ? JSON.parse(stored) : {};
+      } catch (e) {
+        loadedProgress[ci] = {};
+      }
     });
     setChecklistState(loadedProgress);
   }, [checklistItems]);
@@ -2095,13 +2100,13 @@ export default function Page() {
       }
 
       if (responseData && responseData.status === 'success') {
-        const successMsg = responseData.message || `Welcome to the Fintezy family, ${name}! Your request has been recorded.`;
+        const successMsg = responseData.message || `Welcome to the Fin2ools family, ${name}! Your request has been recorded.`;
         setConnectFeedback({
           type: 'success',
           message: successMsg
         });
         showToast(
-          'Welcome to the Fintezy Family!',
+          'Welcome to the Fin2ools Family!',
           successMsg,
           'success'
         );
@@ -2117,7 +2122,7 @@ export default function Page() {
               email,
               phone,
               user_type: userType,
-              service: 'Fintezy Community Network',
+              service: 'Fin2ools Community Network',
               message,
               created_at: new Date()
             }]);
@@ -2785,7 +2790,7 @@ export default function Page() {
         <table border="1" style="border-collapse: collapse;">
           <!-- Website Name & Portal Branding at Top -->
           <tr>
-            <th colspan="8" class="portal-brand">Fintezy — CA Practice &amp; Statutory Compliance Resource Portal</th>
+            <th colspan="8" class="portal-brand">Fin2ools — CA Practice &amp; Statutory Compliance Resource Portal</th>
           </tr>
           <tr>
             <th colspan="8" class="portal-sub">STATUTORY COMPLIANCE CHECKLIST &amp; AUDIT WORKING PAPER</th>
@@ -2874,7 +2879,7 @@ export default function Page() {
           <tr style="background-color: #f8fafc;">
             <td colspan="3" class="data-cell" style="height: 32px;"><strong>Audit Prepared By:</strong> Article / Associate</td>
             <td colspan="3" class="data-cell"><strong>Reviewed By:</strong> Chartered Accountant</td>
-            <td colspan="2" class="data-cell"><strong>Portal ID:</strong> Fintezy-STAT-${statPan}</td>
+            <td colspan="2" class="data-cell"><strong>Portal ID:</strong> Fin2ools-STAT-${statPan}</td>
           </tr>
         </table>
       </body>
@@ -2891,7 +2896,7 @@ export default function Page() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    showToast('Excel Working Paper Exported', `Downloaded spreadsheet with client details & Fintezy portal branding.`, 'success');
+    showToast('Excel Working Paper Exported', `Downloaded spreadsheet with client details & Fin2ools portal branding.`, 'success');
   };
 
   const handleExportTrackerPdf = () => {
@@ -2950,7 +2955,7 @@ export default function Page() {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Fintezy Statutory Compliance Checklist - ${statClientName}</title>
+        <title>Fin2ools Statutory Compliance Checklist - ${statClientName}</title>
         <style>
           @page {
             size: A4 landscape;
@@ -3187,7 +3192,7 @@ export default function Page() {
       <body>
         <!-- Portal Watermark in good transparency -->
         <div class="watermark-container">
-          <div class="watermark-brand-title">FINTEZY PORTAL</div>
+          <div class="watermark-brand-title">FIN2OOLS PORTAL</div>
           <div class="watermark-subtext">Statutory Compliance &amp; CA Audit</div>
         </div>
 
@@ -3196,7 +3201,7 @@ export default function Page() {
           <div class="portal-header">
             <div class="brand-logo-area">
               <div>
-                <div class="brand-name">Fin<span class="brand-highlight">tezy</span></div>
+                <div class="brand-name">Fin<span class="brand-highlight">2ools</span></div>
                 <div class="brand-tagline">Chartered Accountancy &amp; Statutory Compliance Portal</div>
               </div>
             </div>
@@ -3313,7 +3318,7 @@ export default function Page() {
 
           <!-- Document Footer -->
           <div class="portal-footer-stamp">
-            <div>Confidential Working Paper • Generated from Fintezy CA Compliance Portal</div>
+            <div>Confidential Working Paper • Generated from Fin2ools CA Compliance Portal</div>
             <div>Page 1 of 1 • System Verified Audit Trail</div>
           </div>
         </div>
@@ -3354,11 +3359,11 @@ export default function Page() {
             href="#" 
             className="logo brand-logo-link" 
             onClick={(e) => { e.preventDefault(); handlePageChange('home'); }}
-            title="Fintezy Homepage"
+            title="Fin2ools Homepage"
           >
             <img 
-              src="/fintezy.png" 
-              alt="Fintezy Logo" 
+              src="/fin2ools.png" 
+              alt="Fin2ools Logo" 
               className="brand-logo-img" 
               width={52} 
               height={52} 
@@ -3457,7 +3462,7 @@ export default function Page() {
               type="button"
               className={`nav-btn ${activePage === 'library' ? 'active' : ''}`}
               onClick={() => handlePageChange('library')}
-              title="Fintezy Digital Library & Knowledge Vault"
+              title="Fin2ools Digital Library & Knowledge Vault"
             >
               <span>Digital Library</span>
             </button>
@@ -3589,37 +3594,6 @@ export default function Page() {
                   <span>Digital Library</span>
                   <ArrowRight size={16} />
                 </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon"><AlarmClock /></div>
-              <div className="stat-info">
-                <span className="stat-number">50+</span>
-                <span className="stat-desc">Deadlines Tracked</span>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon"><Calculator /></div>
-              <div className="stat-info">
-                <span className="stat-number">4</span>
-                <span className="stat-desc">Core Tax Calculators</span>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon"><Database /></div>
-              <div className="stat-info">
-                <span className="stat-number">20+</span>
-                <span className="stat-desc">GST Code Library</span>
-              </div>
-            </div>
-            <div className="stat-card flex-center-y">
-              <div className="stat-icon highlight"><GraduationCap /></div>
-              <div className="stat-info">
-                <span className="stat-number">Free</span>
-                <span className="stat-desc">Always Free for Students</span>
               </div>
             </div>
           </div>
@@ -5441,8 +5415,8 @@ export default function Page() {
           <div className="section-container">
             <div className="section-header">
               <span className="section-badge">Join the Network</span>
-              <h1>Join the Fintezy family!</h1>
-              <p className="section-subtitle">Join the Fintezy family. We are building a welcoming network where students, consultants, and organizations collaborate and drive each other's success in finance and compliance.</p>
+              <h1>Join the Fin2ools family!</h1>
+              <p className="section-subtitle">Join the Fin2ools family. We are building a welcoming network where students, consultants, and organizations collaborate and drive each other's success in finance and compliance.</p>
             </div>
 
             <div className="contact-layout connect-layout-centered">
@@ -5526,7 +5500,7 @@ export default function Page() {
                 </div>
 
                 <button type="submit" className="submit-btn" disabled={savingForm}>
-                  <span>{savingForm ? 'Submitting...' : 'Join the Fintezy family!'}</span>
+                  <span>{savingForm ? 'Submitting...' : 'Join the Fin2ools family!'}</span>
                   <Send size={18} />
                 </button>
               </form>
@@ -5545,12 +5519,26 @@ export default function Page() {
 
             <div className="contact-layout connect-layout-centered">
               <BookConsultationForm 
-                onSuccess={(payload) => {
+                onSuccess={async (payload) => {
                   showToast(
                     'Consultation Booked!',
                     `Thank you, ${payload.fullName}. Your request for "${payload.requiredService}" has been sent to our specialists.`,
                     'success'
                   );
+                  if (supabase) {
+                    try {
+                      await supabase.from('consultations').insert([{
+                        name: payload.fullName,
+                        email: payload.emailId,
+                        phone: payload.phoneNumber,
+                        service: payload.requiredService,
+                        message: payload.description,
+                        created_at: new Date()
+                      }]);
+                    } catch (sbErr) {
+                      console.warn('Supabase consultation logging note:', sbErr);
+                    }
+                  }
                 }}
               />
             </div>
@@ -5563,7 +5551,7 @@ export default function Page() {
             <div className="auth-card">
               <div className="auth-logo">
                 <span className="logo-icon"><ShieldCheck /></span>
-                <h2>Fin<span>tezy</span> Team</h2>
+                <h2>Fin<span>2ools</span> Team</h2>
               </div>
               <p className="auth-subtitle">Access your professional client inquiries, lead analytics, and scheduling logs.</p>
               
@@ -5659,7 +5647,7 @@ export default function Page() {
                     <input 
                       type="email" 
                       id="auth-email" 
-                      placeholder="name@fintezy.in" 
+                      placeholder="name@fin2ools.in" 
                       value={authEmail} 
                       onChange={(e) => setAuthEmail(e.target.value)} 
                       required 
@@ -5747,7 +5735,7 @@ export default function Page() {
 
         {/* PAGE 10: TEAM DASHBOARD & ANALYTICS */}
         <section className={`page ${activePage === 'dashboard' ? 'active' : ''}`}>
-          <ProtectedRoute onRedirect={() => handlePageChange('login')} redirectTo="/#login">
+          <ProtectedRoute enabled={activePage === 'dashboard'} onRedirect={() => handlePageChange('login')} redirectTo="/#login">
             <div className="dashboard-wrapper">
               {/* UNVERIFIED EMAIL NOTIFICATION BANNER */}
               {user && !user.emailVerified && (
@@ -6818,7 +6806,7 @@ export default function Page() {
         <section className={`page ${activePage === 'tools' ? 'active' : ''}`}>
           <div className="section-container">
             <div className="section-header text-center">
-              <span className="section-badge">Fintezy Utility Suite</span>
+              <span className="section-badge">Fin2ools Utility Suite</span>
               <h1>Professional Tools Hub</h1>
               <p className="section-subtitle">Real-time statutory tax calculators, countdown trackers, audit checklists, and reconciliation engines built for students, consultants, and corporates.</p>
             </div>
@@ -6911,7 +6899,7 @@ export default function Page() {
               <div className="tool-hub-card" onClick={() => handlePageChange('library')}>
                 <div>
                   <div className="tool-hub-icon"><BookOpen size={24} /></div>
-                  <div className="tool-hub-title">Fintezy Digital Library</div>
+                  <div className="tool-hub-title">Fin2ools Digital Library</div>
                   <div className="tool-hub-desc">Authoritative statutory Bare Acts, CBDT/CBIC circulars, ICAI Standards on Auditing (SA), CARO 2020 checklists, and free CA student revision digests.</div>
                 </div>
                 <div className="tool-hub-footer">
@@ -6928,7 +6916,7 @@ export default function Page() {
           <div className="section-container">
             <div className="section-header text-center">
               <span className="section-badge">Authoritative CA &amp; Tax Repository</span>
-              <h1>Fintezy Digital Library</h1>
+              <h1>Fin2ools Digital Library</h1>
               <p className="section-subtitle">A clean, hierarchical statutory vault designed for Chartered Accountants, tax practitioners, students, and corporate compliance teams.</p>
             </div>
 
@@ -7250,13 +7238,13 @@ export default function Page() {
           <div className="footer-brand">
             <div className="logo brand-logo-link" onClick={() => handlePageChange('home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
               <img 
-                src="/fintezy.png" 
-                alt="Fintezy Logo" 
+                src="/fin2ools.png" 
+                alt="Fin2ools Logo" 
                 className="brand-logo-img" 
                 width={40} 
                 height={40} 
               />
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, marginLeft: '8px' }}>Fin<span className="brand-highlight">tezy</span></span>
+              <span style={{ fontSize: '1.25rem', fontWeight: 800, marginLeft: '8px' }}>Fin<span className="brand-highlight">2ools</span></span>
             </div>
             <p>A fintech solution that makes finance, tax, and compliance easy for students, consultants, and corporates.</p>
           </div>
@@ -7273,7 +7261,7 @@ export default function Page() {
           </div>
 
           <div className="footer-copy-col">
-            <p>&copy; 2026 Fintezy. Crafted for CA professionals, students, and businesses.</p>
+            <p>&copy; 2026 Fin2ools. Crafted for CA professionals, students, and businesses.</p>
             <p className="disclaimer">Disclaimer: Calculations provided are estimates. Always cross-verify calculations against official notifications before executing filing returns.</p>
           </div>
         </div>

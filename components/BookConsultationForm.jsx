@@ -228,51 +228,52 @@ export default function BookConsultationForm({ onSuccess, onError, className = "
           </div>
         </div>
 
-        {/* ROW 2: Email ID */}
-        <div className="form-group">
-          <label htmlFor="consult-emailid" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Mail size={14} style={{ color: 'var(--primary)' }} />
-            <span>Email ID</span>
-          </label>
-          <input 
-            type="email" 
-            id="consult-emailid" 
-            name="emailId"
-            placeholder="e.g. rajesh@example.com" 
-            value={formData.emailId}
-            onChange={handleChange}
-            disabled={loading}
-            required 
-          />
+        {/* ROW 2: Email ID & Required Service */}
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="consult-emailid" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Mail size={14} style={{ color: 'var(--primary)' }} />
+              <span>Email ID</span>
+            </label>
+            <input 
+              type="email" 
+              id="consult-emailid" 
+              name="emailId"
+              placeholder="e.g. rajesh@example.com" 
+              value={formData.emailId}
+              onChange={handleChange}
+              disabled={loading}
+              required 
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="consult-service" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Briefcase size={14} style={{ color: 'var(--primary)' }} />
+              <span>Required Service</span>
+            </label>
+            <select 
+              id="consult-service" 
+              name="requiredService"
+              value={formData.requiredService}
+              onChange={handleChange}
+              disabled={loading}
+              required
+            >
+              <option value="" disabled>Select Required Service...</option>
+              <option value="Financial Services">Financial Services</option>
+              <option value="Taxation Compliance & Consultancy">Taxation Compliance &amp; Consultancy</option>
+              <option value="CFO Services">CFO Services</option>
+              <option value="Accounts & Bookkeeping">Accounts &amp; Bookkeeping</option>
+            </select>
+          </div>
         </div>
 
-        {/* ROW 3: Required Service (Dropdown) */}
-        <div className="form-group">
-          <label htmlFor="consult-service" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Briefcase size={14} style={{ color: 'var(--primary)' }} />
-            <span>Required Service</span>
-          </label>
-          <select 
-            id="consult-service" 
-            name="requiredService"
-            value={formData.requiredService}
-            onChange={handleChange}
-            disabled={loading}
-            required
-          >
-            <option value="" disabled>Select Required Service...</option>
-            <option value="Financial Services">Financial Services</option>
-            <option value="Taxation Compliance & Consultancy">Taxation Compliance &amp; Consultancy</option>
-            <option value="CFO Services">CFO Services</option>
-            <option value="Accounts & Bookkeeping">Accounts &amp; Bookkeeping</option>
-          </select>
-        </div>
-
-        {/* ROW 4: Description (Textarea) */}
+        {/* ROW 3: Requirement Description (Textarea) */}
         <div className="form-group">
           <label htmlFor="consult-description" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <FileText size={14} style={{ color: 'var(--primary)' }} />
-            <span>Description</span>
+            <span>Requirement Description</span>
           </label>
           <textarea 
             id="consult-description" 
@@ -286,22 +287,26 @@ export default function BookConsultationForm({ onSuccess, onError, className = "
           ></textarea>
         </div>
 
-        {/* SUBMIT BUTTON */}
+        {/* BLUE ACTION BUTTON */}
         <button 
           type="submit" 
           className="submit-btn" 
           style={{ 
-            backgroundColor: 'var(--primary)', 
+            backgroundColor: '#2563eb', 
             color: '#fff',
             cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.75 : 1
+            opacity: loading ? 0.75 : 1,
+            fontWeight: 700,
+            fontSize: '1rem',
+            padding: '14px 20px',
+            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
           }} 
           disabled={loading}
         >
           {loading ? (
             <>
               <Loader2 size={18} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
-              <span>Submitting...</span>
+              <span>Submitting Consultation...</span>
             </>
           ) : (
             <>
