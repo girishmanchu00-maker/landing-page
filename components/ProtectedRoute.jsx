@@ -23,6 +23,24 @@ export default function ProtectedRoute({ children, onRedirect, redirectTo = '/lo
       return;
     }
 
+    // 1. Check for active Email OTP session stored in localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('fin2ools_auth_user');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.email) {
+            setAuthenticatedUser(parsed);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Error reading stored auth session:', e);
+      }
+    }
+
+    // 2. Check Firebase Auth if available
     if (!auth) {
       setLoading(false);
       if (onRedirect) {
@@ -38,6 +56,19 @@ export default function ProtectedRoute({ children, onRedirect, redirectTo = '/lo
         setAuthenticatedUser(currentUser);
         setLoading(false);
       } else {
+        // Double check localStorage in case auth happened via Email OTP
+        let localUser = null;
+        try {
+          const stored = typeof window !== 'undefined' ? localStorage.getItem('fin2ools_auth_user') : null;
+          if (stored) localUser = JSON.parse(stored);
+        } catch (_) {}
+
+        if (localUser && localUser.email) {
+          setAuthenticatedUser(localUser);
+          setLoading(false);
+          return;
+        }
+
         setAuthenticatedUser(null);
         setLoading(false);
 

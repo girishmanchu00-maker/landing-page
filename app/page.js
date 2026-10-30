@@ -16,9 +16,6 @@ import BookConsultationForm from '../components/BookConsultationForm';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { auth } from '../lib/firebase';
 import { 
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  sendSignInLinkToEmail,
   signOut as firebaseSignOut,
   onAuthStateChanged
 } from 'firebase/auth';
@@ -1038,14 +1035,11 @@ export default function Page() {
   // Authentication & Dashboard States
   const [user, setUser] = useState(null);
   const [authChecking, setAuthChecking] = useState(true);
-  const [authMethod, setAuthMethod] = useState('phone'); // 'phone' or 'email'
-  const [phoneCountryCode, setPhoneCountryCode] = useState('+91');
-  const [phoneInput, setPhoneInput] = useState('');
-  const [phoneStep, setPhoneStep] = useState('phone'); // 'phone' or 'otp'
-  const [otpCode, setOtpCode] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState(null);
   const [authEmail, setAuthEmail] = useState('');
-  const [emailLinkSent, setEmailLinkSent] = useState(false);
+  const [emailStep, setEmailStep] = useState('email'); // 'email' or 'otp'
+  const [otpCode, setOtpCode] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [devOtpHint, setDevOtpHint] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [authFeedback, setAuthFeedback] = useState({ type: null, message: '' });
   const [consultations, setConsultations] = useState([]);
@@ -1445,19 +1439,53 @@ export default function Page() {
     fetchChecklistSheet();
     fetchTrackerSheet();
 
-    // Firebase Auth Session Sync
+    // 1. Check for active Email OTP session stored in localStorage
+    let hasLocalSession = false;
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('fin2ools_auth_user');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.email) {
+            setUser(parsed);
+            setAuthChecking(false);
+            hasLocalSession = true;
+            fetchConsultationsData();
+          }
+        }
+      } catch (e) {
+        console.warn('Error reading stored auth session:', e);
+      }
+    }
+
+    // 2. Firebase Auth Session Sync
     let unsubscribeAuth = null;
     if (auth) {
       unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-        setUser(currentUser || null);
-        setAuthChecking(false);
         if (currentUser) {
+          setUser(currentUser);
+          setAuthChecking(false);
           fetchConsultationsData();
-        } else {
-          setConsultations([]);
+        } else if (!hasLocalSession) {
+          // Only clear if there is no valid Email OTP session in localStorage
+          let currentStored = null;
+          try {
+            const s = typeof window !== 'undefined' ? localStorage.getItem('fin2ools_auth_user') : null;
+            if (s) currentStored = JSON.parse(s);
+          } catch (_) {}
+
+          if (currentStored && currentStored.email) {
+            setUser(currentStored);
+            setAuthChecking(false);
+            fetchConsultationsData();
+          } else {
+            setUser(null);
+            setAuthChecking(false);
+            setConsultations([]);
+          }
         }
       });
-    } else {
+    } else if (!hasLocalSession) {
       setAuthChecking(false);
     }
 
@@ -1468,6 +1496,15 @@ export default function Page() {
       }
     };
   }, []);
+
+  // Cooldown timer interval for OTP resend
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const interval = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
 
   // Sync checklist checked status reactively from LocalStorage
   useEffect(() => {
@@ -1777,153 +1814,12 @@ export default function Page() {
     }
   };
 
-  const getAuthActionUrl = () => {
-    if (typeof window !== 'undefined' && window.location.origin) {
-      if (!window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1')) {
-        return `${window.location.origin}/verify-email`;
-      }
-    }
-    return "https://fin2ools.online/verify-email";
-  };
-
-  const getFormattedPhoneNumber = (code, rawNum) => {
-    let trimmed = (rawNum || '').trim();
-    if (trimmed.startsWith('+')) {
-      return trimmed.replace(/[^\d+]/g, '');
-    }
-    const cleanCode = (code || '+91').trim().startsWith('+') ? (code || '+91').trim() : `+${(code || '+91').trim()}`;
-    const cleanDigits = trimmed.replace(/\D/g, '').replace(/^0+/, '');
-    return `${cleanCode}${cleanDigits}`;
-  };
-
-  const setupRecaptcha = (containerId = 'recaptcha-container') => {
-    if (typeof window === 'undefined' || !auth) return null;
-    try {
-      if (window.recaptchaVerifier) {
-        try {
-          window.recaptchaVerifier.clear();
-        } catch (_) {}
-        window.recaptchaVerifier = null;
-      }
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
-        size: 'invisible',
-        callback: () => {},
-        'expired-callback': () => {
-          showToast('Verification Expired', 'reCAPTCHA expired. Please request a new OTP.', 'error');
-        }
-      });
-      return window.recaptchaVerifier;
-    } catch (err) {
-      console.error('setupRecaptcha error:', err);
-      return null;
-    }
-  };
-
-  const handleSendPhoneOtp = async (e) => {
+  const handleSendEmailOtp = async (e) => {
     if (e) e.preventDefault();
     setAuthFeedback({ type: null, message: '' });
 
-    const rawNum = phoneInput.trim();
-    if (!rawNum) {
-      setAuthFeedback({ type: 'error', message: 'Please enter your mobile phone number.' });
-      showToast('Phone Number Required', 'Please enter your mobile phone number.', 'error');
-      return;
-    }
-
-    const fullPhoneNumber = getFormattedPhoneNumber(phoneCountryCode, rawNum);
-    if (fullPhoneNumber.length < 10) {
-      setAuthFeedback({ type: 'error', message: 'Please enter a valid mobile number with country code.' });
-      showToast('Invalid Phone Number', 'Please enter a valid phone number.', 'error');
-      return;
-    }
-
-    setAuthLoading(true);
-    try {
-      const appVerifier = setupRecaptcha('recaptcha-container');
-      if (!appVerifier) {
-        throw new Error('Could not initialize reCAPTCHA verifier. Please refresh the page and try again.');
-      }
-
-      const confirmation = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
-      setConfirmationResult(confirmation);
-      setPhoneStep('otp');
-      setOtpCode('');
-      setAuthFeedback({
-        type: 'success',
-        message: `OTP code sent to ${fullPhoneNumber}. Please enter the 6-digit code below to complete sign-in.`
-      });
-      showToast('OTP Dispatched!', `6-digit code sent to ${fullPhoneNumber}`, 'success');
-    } catch (err) {
-      console.error('signInWithPhoneNumber error:', err);
-      let errorMsg = err.message || 'Failed to send verification SMS.';
-      if (err.code === 'auth/invalid-phone-number') {
-        errorMsg = 'Invalid phone number format. Please ensure correct country code (e.g. +91) and 10-digit number.';
-      } else if (err.code === 'auth/too-many-requests') {
-        errorMsg = 'Too many attempts. SMS verification temporarily blocked. Please try again after a few minutes.';
-      } else if (err.code === 'auth/captcha-check-failed') {
-        errorMsg = 'reCAPTCHA check failed. Please refresh the page and retry.';
-      } else if (err.code === 'auth/quota-exceeded') {
-        errorMsg = 'Daily SMS quota exceeded. Please use Email Magic Link login.';
-      }
-      setAuthFeedback({ type: 'error', message: errorMsg });
-      showToast('SMS Error', errorMsg, 'error');
-      if (typeof window !== 'undefined' && window.recaptchaVerifier) {
-        try { window.recaptchaVerifier.clear(); } catch (_) {}
-        window.recaptchaVerifier = null;
-      }
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const handleVerifyPhoneOtp = async (e) => {
-    if (e) e.preventDefault();
-    setAuthFeedback({ type: null, message: '' });
-
-    const cleanOtp = otpCode.replace(/\D/g, '').trim();
-    if (cleanOtp.length !== 6) {
-      setAuthFeedback({ type: 'error', message: 'Please enter the complete 6-digit verification code.' });
-      showToast('Incomplete Code', 'Please enter the 6-digit code.', 'error');
-      return;
-    }
-
-    if (!confirmationResult) {
-      setAuthFeedback({ type: 'error', message: 'Verification session expired. Please request a new OTP.' });
-      setPhoneStep('phone');
-      return;
-    }
-
-    setAuthLoading(true);
-    try {
-      const userCredential = await confirmationResult.confirm(cleanOtp);
-      const currentUser = userCredential.user;
-      setUser(currentUser);
-      setAuthFeedback({
-        type: 'success',
-        message: `Sign in successful! Welcome to Fin2ools.`
-      });
-      showToast('Welcome!', `Authenticated as ${currentUser.phoneNumber || 'User'}`, 'success');
-      handlePageChange('home');
-    } catch (err) {
-      console.error('confirmationResult.confirm error:', err);
-      let errorMsg = 'Invalid verification code. Please check your SMS and try again.';
-      if (err.code === 'auth/invalid-verification-code') {
-        errorMsg = 'The 6-digit code entered is incorrect. Please verify and try again.';
-      } else if (err.code === 'auth/code-expired') {
-        errorMsg = 'The verification code has expired. Please click "Resend Code".';
-      }
-      setAuthFeedback({ type: 'error', message: errorMsg });
-      showToast('Verification Failed', errorMsg, 'error');
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const handleSendEmailLink = async (e) => {
-    if (e) e.preventDefault();
-    setAuthFeedback({ type: null, message: '' });
-
-    if (!authEmail.trim() || !authEmail.includes('@')) {
+    const cleanEmail = (authEmail || '').trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@') || cleanEmail.length < 5) {
       setAuthFeedback({ type: 'error', message: 'Please enter a valid email address.' });
       showToast('Email Required', 'Please enter a valid email address.', 'error');
       return;
@@ -1931,30 +1827,87 @@ export default function Page() {
 
     setAuthLoading(true);
     try {
-      const actionCodeSettings = {
-        url: getAuthActionUrl(),
-        handleCodeInApp: true
-      };
-      await sendSignInLinkToEmail(auth, authEmail.trim(), actionCodeSettings);
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('emailForSignIn', authEmail.trim());
+      const response = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to dispatch verification OTP.');
       }
-      setEmailLinkSent(true);
+
+      setEmailStep('otp');
+      setOtpCode('');
+      setResendCooldown(30);
+      if (data.devOtp) {
+        setDevOtpHint(data.devOtp);
+      }
       setAuthFeedback({
         type: 'success',
-        message: `Secure passwordless magic link dispatched to ${authEmail.trim()}! Please check your inbox (and Spam/Junk folder) and click the link to sign in instantly.`
+        message: data.message || `6-digit verification code sent to ${cleanEmail}.`
       });
-      showToast('Magic Link Dispatched!', `Sent to ${authEmail.trim()}. Check your inbox or spam.`, 'success');
+      showToast('OTP Dispatched!', `6-digit code sent to ${cleanEmail}`, 'success');
     } catch (err) {
-      console.error('sendSignInLinkToEmail error:', err);
-      let errorMsg = err.message || 'Failed to dispatch magic link.';
-      if (err.code === 'auth/operation-not-allowed') {
-        errorMsg = 'Email link sign-in is not enabled in Firebase Console. Please enable "Email link (passwordless sign-in)" under Authentication > Sign-in method.';
-      } else if (err.code === 'auth/invalid-email') {
-        errorMsg = 'The email address is invalid.';
-      }
+      console.error('handleSendEmailOtp error:', err);
+      const errorMsg = err.message || 'Could not send verification code. Please retry.';
       setAuthFeedback({ type: 'error', message: errorMsg });
-      showToast('Dispatch Failed', errorMsg, 'error');
+      showToast('Dispatch Error', errorMsg, 'error');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async (e) => {
+    if (e) e.preventDefault();
+    setAuthFeedback({ type: null, message: '' });
+
+    const cleanOtp = (otpCode || '').replace(/\D/g, '').trim();
+    if (cleanOtp.length !== 6) {
+      setAuthFeedback({ type: 'error', message: 'Please enter the complete 6-digit verification code.' });
+      showToast('Incomplete Code', 'Please enter the 6-digit code.', 'error');
+      return;
+    }
+
+    setAuthLoading(true);
+    try {
+      const cleanEmail = (authEmail || '').trim().toLowerCase();
+      const response = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, otp: cleanOtp })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Invalid or expired OTP code.');
+      }
+
+      const verifiedUser = data.user || {
+        email: cleanEmail,
+        uid: 'user_' + Date.now(),
+        emailVerified: true
+      };
+
+      setUser(verifiedUser);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('fin2ools_auth_user', JSON.stringify(verifiedUser));
+      }
+
+      setAuthFeedback({
+        type: 'success',
+        message: 'Email successfully verified! Unlocking Fin2ools portal...'
+      });
+      showToast('Access Granted!', `Authenticated as ${verifiedUser.email}`, 'success');
+      handlePageChange('home');
+    } catch (err) {
+      console.error('handleVerifyEmailOtp error:', err);
+      const errorMsg = err.message || 'The verification code entered is incorrect or expired.';
+      setAuthFeedback({ type: 'error', message: errorMsg });
+      showToast('Verification Failed', errorMsg, 'error');
     } finally {
       setAuthLoading(false);
     }
@@ -1963,14 +1916,15 @@ export default function Page() {
   const handleSignOut = async () => {
     try {
       if (auth) {
-        await firebaseSignOut(auth);
+        try { await firebaseSignOut(auth); } catch (_) {}
       }
       setUser(null);
-      setConfirmationResult(null);
-      setPhoneStep('phone');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('fin2ools_auth_user');
+      }
+      setEmailStep('email');
       setOtpCode('');
-      setPhoneInput('');
-      setEmailLinkSent(false);
+      setDevOtpHint('');
       setAuthFeedback({ type: null, message: '' });
       showToast('Website Locked', 'You have been signed out. Security firewall is active.', 'info');
       handlePageChange('home');
@@ -3383,9 +3337,6 @@ export default function Page() {
           fontFamily: 'var(--font-body, system-ui, sans-serif)'
         }}
       >
-        {/* Invisible reCAPTCHA container for Firebase Phone OTP verification */}
-        <div id="recaptcha-container"></div>
-
         {/* Top Firewall Header */}
         <header style={{ maxWidth: '1080px', width: '100%', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.5rem 2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -3403,7 +3354,7 @@ export default function Page() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.35)', color: '#fca5a5', padding: '6px 14px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600 }}>
             <Lock size={14} />
-            <span>Portal Locked — OTP Verification Required</span>
+            <span>Portal Locked — Email OTP Required</span>
           </div>
         </header>
 
@@ -3417,64 +3368,8 @@ export default function Page() {
               Statutory Security Firewall
             </h1>
             <p style={{ fontSize: '0.85rem', color: '#94a3b8', lineHeight: 1.5, margin: 0 }}>
-              Verify your identity via Mobile OTP or Email Link to unlock Fin2ools compliance portals, calculators, and tools.
+              Verify your identity via Email OTP to unlock Fin2ools compliance portals, calculators, and statutory CA tools.
             </p>
-          </div>
-
-          {/* TWO-METHOD TABS */}
-          <div style={{ display: 'flex', background: 'rgba(15, 23, 42, 0.6)', padding: '4px', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <button
-              type="button"
-              onClick={() => {
-                setAuthMethod('phone');
-                setAuthFeedback({ type: null, message: '' });
-              }}
-              style={{
-                flex: 1,
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: 'none',
-                background: authMethod === 'phone' ? 'var(--primary, #1a73e8)' : 'transparent',
-                color: authMethod === 'phone' ? '#ffffff' : '#94a3b8',
-                fontWeight: authMethod === 'phone' ? 600 : 500,
-                fontSize: '0.82rem',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <Phone size={14} />
-              <span>Mobile OTP (SMS)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAuthMethod('email');
-                setAuthFeedback({ type: null, message: '' });
-              }}
-              style={{
-                flex: 1,
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: 'none',
-                background: authMethod === 'email' ? 'var(--primary, #1a73e8)' : 'transparent',
-                color: authMethod === 'email' ? '#ffffff' : '#94a3b8',
-                fontWeight: authMethod === 'email' ? 600 : 500,
-                fontSize: '0.82rem',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <Mail size={14} />
-              <span>Email Magic Link</span>
-            </button>
           </div>
 
           {/* FEEDBACK BANNERS */}
@@ -3492,210 +3387,12 @@ export default function Page() {
             </div>
           )}
 
-          {/* 1. MOBILE PHONE OTP (SMS) */}
-          {authMethod === 'phone' && (
-            <div>
-              {phoneStep === 'phone' ? (
-                <form onSubmit={handleSendPhoneOtp}>
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <label htmlFor="gatekeeper-phone" style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e2e8f0', marginBottom: '6px' }}>
-                      Mobile Phone Number
-                    </label>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <div style={{ width: '90px', flexShrink: 0 }}>
-                        <select
-                          value={phoneCountryCode}
-                          onChange={(e) => setPhoneCountryCode(e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '11px 8px',
-                            background: '#0f172a',
-                            border: '1px solid rgba(255, 255, 255, 0.15)',
-                            borderRadius: '10px',
-                            color: '#ffffff',
-                            fontSize: '0.85rem',
-                            outline: 'none'
-                          }}
-                        >
-                          <option value="+91">🇮🇳 +91</option>
-                          <option value="+1">🇺🇸 +1</option>
-                          <option value="+44">🇬🇧 +44</option>
-                          <option value="+971">🇦🇪 +971</option>
-                          <option value="+65">🇸🇬 +65</option>
-                          <option value="+61">🇦🇺 +61</option>
-                        </select>
-                      </div>
-                      <div style={{ flex: 1, position: 'relative' }}>
-                        <input
-                          type="tel"
-                          id="gatekeeper-phone"
-                          placeholder="9876543210"
-                          value={phoneInput}
-                          onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                          maxLength={10}
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          required
-                          style={{
-                            width: '100%',
-                            padding: '11px 14px',
-                            background: '#0f172a',
-                            border: '1px solid rgba(255, 255, 255, 0.15)',
-                            borderRadius: '10px',
-                            color: '#ffffff',
-                            fontSize: '0.9rem',
-                            letterSpacing: '1px',
-                            outline: 'none'
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '6px', lineHeight: 1.4 }}>
-                      We will send a 6-digit statutory verification OTP via Firebase SMS.
-                    </p>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={authLoading || phoneInput.length < 10}
-                    style={{
-                      width: '100%',
-                      padding: '12px 18px',
-                      background: 'var(--primary, #1a73e8)',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontWeight: 600,
-                      fontSize: '0.88rem',
-                      cursor: authLoading || phoneInput.length < 10 ? 'not-allowed' : 'pointer',
-                      opacity: authLoading || phoneInput.length < 10 ? 0.6 : 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 14px rgba(26, 115, 232, 0.35)',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {authLoading ? (
-                      <>
-                        <RefreshCw className="animate-spin" size={16} />
-                        <span>Sending SMS Code...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Send Verification Code</span>
-                        <ArrowRight size={16} />
-                      </>
-                    )}
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleVerifyPhoneOtp}>
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <label htmlFor="gatekeeper-otp" style={{ fontSize: '0.8rem', fontWeight: 600, color: '#e2e8f0' }}>
-                        Enter 6-Digit OTP Code
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPhoneStep('phone');
-                          setOtpCode('');
-                          setAuthFeedback({ type: null, message: '' });
-                        }}
-                        style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.72rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
-                      >
-                        Change Number
-                      </button>
-                    </div>
-
-                    <input
-                      type="text"
-                      id="gatekeeper-otp"
-                      placeholder="123456"
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      maxLength={6}
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      required
-                      autoFocus
-                      style={{
-                        width: '100%',
-                        padding: '12px',
-                        background: '#0f172a',
-                        border: '1px solid rgba(96, 165, 250, 0.4)',
-                        borderRadius: '10px',
-                        color: '#ffffff',
-                        fontSize: '1.35rem',
-                        letterSpacing: '8px',
-                        textAlign: 'center',
-                        fontWeight: 700,
-                        outline: 'none'
-                      }}
-                    />
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-                      <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
-                        Sent to <strong>{phoneCountryCode} {phoneInput}</strong>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleSendPhoneOtp}
-                        disabled={authLoading}
-                        style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.72rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
-                      >
-                        Resend OTP
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={authLoading || otpCode.length !== 6}
-                    style={{
-                      width: '100%',
-                      padding: '12px 18px',
-                      background: 'var(--primary, #1a73e8)',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontWeight: 600,
-                      fontSize: '0.88rem',
-                      cursor: authLoading || otpCode.length !== 6 ? 'not-allowed' : 'pointer',
-                      opacity: authLoading || otpCode.length !== 6 ? 0.6 : 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 14px rgba(26, 115, 232, 0.35)',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {authLoading ? (
-                      <>
-                        <RefreshCw className="animate-spin" size={16} />
-                        <span>Verifying Code...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Verify &amp; Enter Website</span>
-                        <Check size={16} />
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
-            </div>
-          )}
-
-          {/* 2. EMAIL MAGIC LINK (PASSWORDLESS) */}
-          {authMethod === 'email' && (
-            <form onSubmit={handleSendEmailLink}>
+          {/* EMAIL OTP FLOW */}
+          {emailStep === 'email' ? (
+            <form onSubmit={handleSendEmailOtp}>
               <div style={{ marginBottom: '1.25rem' }}>
                 <label htmlFor="gatekeeper-email" style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#e2e8f0', marginBottom: '6px' }}>
-                  Work or Personal Email
+                  Work or Professional Email
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input
@@ -3705,26 +3402,28 @@ export default function Page() {
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
                     required
+                    autoFocus
                     style={{
                       width: '100%',
-                      padding: '11px 14px',
+                      padding: '12px 14px',
                       background: '#0f172a',
                       border: '1px solid rgba(255, 255, 255, 0.15)',
                       borderRadius: '10px',
                       color: '#ffffff',
                       fontSize: '0.9rem',
-                      outline: 'none'
+                      outline: 'none',
+                      transition: 'border 0.2s ease'
                     }}
                   />
                 </div>
                 <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '6px', lineHeight: 1.4 }}>
-                  We will email you a secure, single-use sign-in link. One click unlocks the website.
+                  We will dispatch a secure 6-digit statutory verification OTP directly to your email inbox.
                 </p>
               </div>
 
               <button
                 type="submit"
-                disabled={authLoading}
+                disabled={authLoading || !authEmail.trim()}
                 style={{
                   width: '100%',
                   padding: '12px 18px',
@@ -3734,8 +3433,8 @@ export default function Page() {
                   borderRadius: '10px',
                   fontWeight: 600,
                   fontSize: '0.88rem',
-                  cursor: authLoading ? 'not-allowed' : 'pointer',
-                  opacity: authLoading ? 0.6 : 1,
+                  cursor: authLoading || !authEmail.trim() ? 'not-allowed' : 'pointer',
+                  opacity: authLoading || !authEmail.trim() ? 0.6 : 1,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -3747,33 +3446,125 @@ export default function Page() {
                 {authLoading ? (
                   <>
                     <RefreshCw className="animate-spin" size={16} />
-                    <span>Dispatching Link...</span>
+                    <span>Dispatching OTP...</span>
                   </>
                 ) : (
                   <>
-                    <span>Send Magic Sign-In Link</span>
-                    <Send size={16} />
+                    <span>Send Verification OTP</span>
+                    <ArrowRight size={16} />
                   </>
                 )}
               </button>
-
-              {emailLinkSent && (
-                <div style={{ marginTop: '16px', padding: '14px', backgroundColor: 'rgba(15, 23, 42, 0.6)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'center' }}>
-                  <p style={{ fontSize: '0.85rem', color: '#ffffff', marginBottom: '4px', fontWeight: 600 }}>
-                    ✉️ Magic link dispatched!
-                  </p>
-                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.4, margin: 0 }}>
-                    Click the sign-in link sent to <strong>{authEmail}</strong> on this device. Remember to check your Spam folder.
-                  </p>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyEmailOtp}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label htmlFor="gatekeeper-otp" style={{ fontSize: '0.8rem', fontWeight: 600, color: '#e2e8f0' }}>
+                    Enter 6-Digit Email OTP
+                  </label>
                   <button
                     type="button"
-                    onClick={() => setEmailLinkSent(false)}
-                    style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.75rem', marginTop: '10px', cursor: 'pointer', textDecoration: 'underline' }}
+                    onClick={() => {
+                      setEmailStep('email');
+                      setOtpCode('');
+                      setAuthFeedback({ type: null, message: '' });
+                    }}
+                    style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.72rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
                   >
-                    Send to a different email
+                    Change Email
                   </button>
                 </div>
-              )}
+
+                <input
+                  type="text"
+                  id="gatekeeper-otp"
+                  placeholder="123456"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  maxLength={6}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  required
+                  autoFocus
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: '#0f172a',
+                    border: '1px solid rgba(96, 165, 250, 0.4)',
+                    borderRadius: '10px',
+                    color: '#ffffff',
+                    fontSize: '1.35rem',
+                    letterSpacing: '8px',
+                    textAlign: 'center',
+                    fontWeight: 700,
+                    outline: 'none'
+                  }}
+                />
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                    Sent to <strong>{authEmail}</strong>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleSendEmailOtp}
+                    disabled={authLoading || resendCooldown > 0}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: resendCooldown > 0 ? '#64748b' : '#60a5fa',
+                      fontSize: '0.72rem',
+                      cursor: resendCooldown > 0 ? 'default' : 'pointer',
+                      padding: 0,
+                      textDecoration: resendCooldown > 0 ? 'none' : 'underline'
+                    }}
+                  >
+                    {resendCooldown > 0 ? `Resend OTP (${resendCooldown}s)` : 'Resend OTP'}
+                  </button>
+                </div>
+
+                {devOtpHint && (
+                  <div style={{ marginTop: '10px', padding: '8px 12px', background: 'rgba(59, 130, 246, 0.1)', border: '1px dashed rgba(59, 130, 246, 0.4)', borderRadius: '8px', fontSize: '0.78rem', color: '#93c5fd', textAlign: 'center' }}>
+                    💡 Testing Hint: Your verification code is <strong>{devOtpHint}</strong>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={authLoading || otpCode.length !== 6}
+                style={{
+                  width: '100%',
+                  padding: '12px 18px',
+                  background: 'var(--primary, #1a73e8)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: '0.88rem',
+                  cursor: authLoading || otpCode.length !== 6 ? 'not-allowed' : 'pointer',
+                  opacity: authLoading || otpCode.length !== 6 ? 0.6 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(26, 115, 232, 0.35)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {authLoading ? (
+                  <>
+                    <RefreshCw className="animate-spin" size={16} />
+                    <span>Verifying OTP...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Verify &amp; Enter Website</span>
+                    <Check size={16} />
+                  </>
+                )}
+              </button>
             </form>
           )}
 
@@ -6004,12 +5795,12 @@ export default function Page() {
                 <span className="logo-icon"><ShieldCheck /></span>
                 <h2>Fin<span>2ools</span> Team</h2>
               </div>
-              <p className="auth-subtitle">Secure, passwordless access with Mobile OTP or Email Magic Link.</p>
+              <p className="auth-subtitle">Secure, statutory portal access with Email Verification OTP.</p>
               
               {user && (
                 <div style={{ textAlign: 'center', padding: '1rem', margin: '1rem 0', background: 'var(--bg-surface-alt)', borderRadius: '12px', border: '1px solid var(--border)' }}>
                   <p style={{ margin: '0 0 10px', fontSize: '0.88rem', color: 'var(--text-primary)' }}>
-                    ✅ Currently Authenticated as <strong>{user.phoneNumber || user.email}</strong>
+                    ✅ Currently Authenticated as <strong>{user.email || user.phoneNumber}</strong>
                   </p>
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                     <button type="button" onClick={() => handlePageChange('home')} style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 14px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
@@ -6021,33 +5812,6 @@ export default function Page() {
                   </div>
                 </div>
               )}
-              
-              <div className="auth-toggle">
-                <button 
-                  type="button"
-                  className={`auth-toggle-btn ${authMethod === 'phone' ? 'active' : ''}`} 
-                  onClick={() => {
-                    setAuthMethod('phone');
-                    setAuthFeedback({ type: null, message: '' });
-                  }}
-                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                >
-                  <Phone size={14} />
-                  <span>Mobile OTP (SMS)</span>
-                </button>
-                <button 
-                  type="button"
-                  className={`auth-toggle-btn ${authMethod === 'email' ? 'active' : ''}`} 
-                  onClick={() => {
-                    setAuthMethod('email');
-                    setAuthFeedback({ type: null, message: '' });
-                  }}
-                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                >
-                  <Mail size={14} />
-                  <span>Email Magic Link</span>
-                </button>
-              </div>
 
               {/* IN-CARD AUTH FEEDBACK BANNERS */}
               {authFeedback.type === 'success' && (
@@ -6116,71 +5880,55 @@ export default function Page() {
                 </div>
               )}
 
-              {/* 1. MOBILE NUMBER OTP FLOW */}
-              {authMethod === 'phone' && (
+              {/* EMAIL OTP FLOW */}
+              {!user && (
                 <div>
-                  {phoneStep === 'phone' ? (
-                    <form onSubmit={handleSendPhoneOtp} className="auth-form">
+                  {emailStep === 'email' ? (
+                    <form onSubmit={handleSendEmailOtp} className="auth-form">
                       <div className="form-group">
-                        <label htmlFor="auth-phone">Mobile Phone Number</label>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <div style={{ width: '85px', flexShrink: 0 }}>
-                            <input
-                              type="text"
-                              value={phoneCountryCode}
-                              onChange={(e) => setPhoneCountryCode(e.target.value)}
-                              placeholder="+91"
-                              aria-label="Country Code"
-                              style={{ textAlign: 'center', fontWeight: '600', padding: '12px 6px' }}
-                              required
-                            />
-                          </div>
-                          <div className="auth-input-wrapper" style={{ flex: 1 }}>
-                            <span className="auth-input-icon"><Phone size={16} /></span>
-                            <input 
-                              type="tel" 
-                              id="auth-phone" 
-                              placeholder="98765 43210" 
-                              value={phoneInput} 
-                              onChange={(e) => setPhoneInput(e.target.value)} 
-                              required 
-                              autoComplete="tel"
-                            />
-                          </div>
+                        <label htmlFor="auth-email">Work or Professional Email</label>
+                        <div className="auth-input-wrapper">
+                          <span className="auth-input-icon"><Mail size={16} /></span>
+                          <input 
+                            type="email" 
+                            id="auth-email" 
+                            placeholder="name@company.com" 
+                            value={authEmail} 
+                            onChange={(e) => setAuthEmail(e.target.value)} 
+                            required 
+                            autoFocus
+                          />
                         </div>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: 1.4 }}>
-                          We will send a 6-digit SMS verification code to this mobile number.
+                          We will send a 6-digit statutory verification OTP code directly to your email inbox.
                         </p>
                       </div>
 
-                      {/* Invisible reCAPTCHA container required by Firebase */}
-                      <div id="recaptcha-container" style={{ margin: '8px 0' }}></div>
-
-                      <button type="submit" className="auth-submit-btn" disabled={authLoading}>
+                      <button type="submit" className="auth-submit-btn" disabled={authLoading || !authEmail.trim()}>
                         {authLoading ? (
                           <span className="flex-center-y justify-center gap-2">
                             <RefreshCw className="animate-spin" size={16} style={{ display: 'inline-block', marginRight: '6px' }} />
-                            <span>Sending OTP...</span>
+                            <span>Dispatching OTP...</span>
                           </span>
                         ) : (
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            <span>Send Verification Code</span>
+                            <span>Send Verification OTP</span>
                             <ArrowRight size={16} />
                           </span>
                         )}
                       </button>
                     </form>
                   ) : (
-                    <form onSubmit={handleVerifyPhoneOtp} className="auth-form">
+                    <form onSubmit={handleVerifyEmailOtp} className="auth-form">
                       <div className="form-group">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                           <label htmlFor="auth-otp" style={{ margin: 0 }}>Enter 6-Digit Code</label>
                           <button 
                             type="button" 
-                            onClick={() => { setPhoneStep('phone'); setOtpCode(''); setAuthFeedback({ type: null, message: '' }); }}
+                            onClick={() => { setEmailStep('email'); setOtpCode(''); setAuthFeedback({ type: null, message: '' }); }}
                             style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
                           >
-                            Change Number
+                            Change Email
                           </button>
                         </div>
                         <div className="auth-input-wrapper">
@@ -6194,24 +5942,30 @@ export default function Page() {
                             maxLength={6}
                             inputMode="numeric"
                             pattern="[0-9]*"
-                            style={{ fontSize: '1.25rem', letterSpacing: '4px', textAlign: 'center', fontWeight: 'bold' }}
+                            style={{ fontSize: '1.25rem', letterSpacing: '6px', textAlign: 'center', fontWeight: 'bold' }}
                             required 
                             autoFocus
                           />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
                           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                            Sent to <strong>{phoneCountryCode} {phoneInput}</strong>
+                            Sent to <strong>{authEmail}</strong>
                           </span>
                           <button 
                             type="button" 
-                            onClick={handleSendPhoneOtp}
-                            disabled={authLoading}
-                            style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                            onClick={handleSendEmailOtp}
+                            disabled={authLoading || resendCooldown > 0}
+                            style={{ background: 'none', border: 'none', color: resendCooldown > 0 ? 'var(--text-secondary)' : 'var(--primary)', fontSize: '0.75rem', cursor: resendCooldown > 0 ? 'default' : 'pointer', padding: 0, textDecoration: resendCooldown > 0 ? 'none' : 'underline' }}
                           >
-                            Resend OTP
+                            {resendCooldown > 0 ? `Resend OTP (${resendCooldown}s)` : 'Resend OTP'}
                           </button>
                         </div>
+
+                        {devOtpHint && (
+                          <div style={{ marginTop: '10px', padding: '8px 12px', background: 'rgba(59, 130, 246, 0.1)', border: '1px dashed rgba(59, 130, 246, 0.4)', borderRadius: '8px', fontSize: '0.78rem', color: 'var(--primary)', textAlign: 'center' }}>
+                            💡 Testing Hint: Your verification code is <strong>{devOtpHint}</strong>
+                          </div>
+                        )}
                       </div>
 
                       <button type="submit" className="auth-submit-btn" disabled={authLoading || otpCode.length !== 6}>
@@ -6230,61 +5984,6 @@ export default function Page() {
                     </form>
                   )}
                 </div>
-              )}
-
-              {/* 2. EMAIL MAGIC LINK (PASSWORDLESS) FLOW */}
-              {authMethod === 'email' && (
-                <form onSubmit={handleSendEmailLink} className="auth-form">
-                  <div className="form-group">
-                    <label htmlFor="auth-email">Work or Personal Email</label>
-                    <div className="auth-input-wrapper">
-                      <span className="auth-input-icon"><Mail size={16} /></span>
-                      <input 
-                        type="email" 
-                        id="auth-email" 
-                        placeholder="name@company.com" 
-                        value={authEmail} 
-                        onChange={(e) => setAuthEmail(e.target.value)} 
-                        required 
-                      />
-                    </div>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: 1.4 }}>
-                      We will email you a secure, single-use sign-in link. One click logs you into your dashboard.
-                    </p>
-                  </div>
-
-                  <button type="submit" className="auth-submit-btn" disabled={authLoading}>
-                    {authLoading ? (
-                      <span className="flex-center-y justify-center gap-2">
-                        <RefreshCw className="animate-spin" size={16} style={{ display: 'inline-block', marginRight: '6px' }} />
-                        <span>Dispatching Link...</span>
-                      </span>
-                    ) : (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                        <span>Send Magic Sign-In Link</span>
-                        <Send size={16} />
-                      </span>
-                    )}
-                  </button>
-
-                  {emailLinkSent && (
-                    <div style={{ marginTop: '16px', padding: '14px', backgroundColor: 'var(--bg-surface-alt)', borderRadius: '8px', border: '1px solid var(--border)', textAlign: 'center' }}>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: '4px', fontWeight: 600 }}>
-                        ✉️ Magic link dispatched!
-                      </p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.4, margin: 0 }}>
-                        Click the sign-in link sent to <strong>{authEmail}</strong> on this device. Remember to check your Spam folder.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => setEmailLinkSent(false)}
-                        style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: '0.75rem', marginTop: '10px', cursor: 'pointer', textDecoration: 'underline' }}
-                      >
-                        Send to a different email
-                      </button>
-                    </div>
-                  )}
-                </form>
               )}
             </div>
           </div>
